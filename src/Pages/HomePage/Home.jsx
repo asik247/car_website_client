@@ -1,9 +1,11 @@
 import React from 'react';
+import Hero1 from '../Heros/Hero1';
 
 const Home = () => {
     return (
         <div>
-            <h1>Hello Home Page Here</h1>
+          {/* hero 1  */}
+          <Hero1></Hero1>
             
         </div>
     );
