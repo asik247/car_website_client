@@ -6,6 +6,7 @@ import NewPage from "../Pages/NewPage/NewPage";
 import Blog from "../Pages/Blog/Blog";
 import About from "../Pages/About/About";
 import Contact from "../Pages/ContactPage/Contact";
+import CarsDetails from "../Pages/CarsDetails/CarsDetails";
 
 const router = createBrowserRouter([
     {
@@ -15,7 +16,8 @@ const router = createBrowserRouter([
             {path:'newPage',element:<NewPage></NewPage>},
             {path:'blog',element:<Blog></Blog>},
             {path:'about',element:<About></About>},
-            {path:'contact',element:<Contact></Contact>}
+            {path:'contact',element:<Contact></Contact>},
+            {path:'carsDetails/:id',element:<CarsDetails></CarsDetails>},
         ]
     }
 ])

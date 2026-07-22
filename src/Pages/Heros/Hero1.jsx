@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-// import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import hero1 from "../../assets/hero1.jpg";
 import hero2 from "../../assets/hero2.jpg";
@@ -58,9 +57,15 @@ const itemVariants = {
     },
 };
 
+const stats = [
+    { value: "500+", label: "Available Cars" },
+    { value: "10K+", label: "Happy Customers" },
+    { value: "24/7", label: "Support" },
+];
+
 const Hero1 = () => {
     return (
-        <section className="w-full bg-base-100  p-4 group">
+        <section className="w-full bg-base-100 p-3 sm:p-4 lg:p-6 group">
             {/*
                 Scoped overrides for Swiper's default pagination/navigation so
                 they match the site's palette instead of Swiper's stock blue.
@@ -68,11 +73,11 @@ const Hero1 = () => {
             */}
             <style>{`
                 .hero-swiper .swiper-pagination {
-                    bottom: 20px !important;
+                    bottom: 14px !important;
                 }
                 .hero-swiper .swiper-pagination-bullet {
-                    width: 10px;
-                    height: 10px;
+                    width: 8px;
+                    height: 8px;
                     background: rgba(255, 255, 255, 0.55);
                     opacity: 1;
                     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -80,7 +85,7 @@ const Hero1 = () => {
                     cursor: pointer;
                 }
                 .hero-swiper .swiper-pagination-bullet-active {
-                    width: 28px;
+                    width: 26px;
                     border-radius: 9999px;
                     background: hsl(var(--p));
                 }
@@ -88,7 +93,22 @@ const Hero1 = () => {
                 .hero-swiper .swiper-button-next {
                     display: none;
                 }
+                @media (min-width: 640px) {
+                    .hero-swiper .swiper-pagination {
+                        bottom: 18px !important;
+                    }
+                    .hero-swiper .swiper-pagination-bullet {
+                        width: 10px;
+                        height: 10px;
+                    }
+                    .hero-swiper .swiper-pagination-bullet-active {
+                        width: 28px;
+                    }
+                }
                 @media (min-width: 1024px) {
+                    .hero-swiper .swiper-pagination {
+                        bottom: 24px !important;
+                    }
                     .hero-swiper .swiper-button-prev,
                     .hero-swiper .swiper-button-next {
                         display: flex;
@@ -108,15 +128,15 @@ const Hero1 = () => {
                     delay: 10000,
                     disableOnInteraction: false,
                 }}
-                className="hero-swiper rounded-3xl relative"
+                className="hero-swiper rounded-2xl lg:rounded-3xl relative overflow-hidden"
             >
                 {slides.map((slide) => (
                     <SwiperSlide key={slide.id}>
-                        <div className="max-w-7xl mx-auto min-h-[85vh] px-6 lg:px-0 py-10  flex flex-col-reverse lg:flex-row items-center justify-between gap-12">
+                        <div className="max-w-7xl mx-auto min-h-fit lg:min-h-[85vh] px-4 sm:px-8 lg:px-0 py-10 lg:py-12 flex flex-col-reverse lg:flex-row items-center justify-between gap-10 lg:gap-12">
 
                             {/* Left Content */}
                             <motion.div
-                                className="flex-1 space-y-6"
+                                className="flex-1 space-y-5 lg:space-y-6 text-center lg:text-left"
                                 variants={containerVariants}
                                 initial="hidden"
                                 whileInView="visible"
@@ -131,72 +151,56 @@ const Hero1 = () => {
 
                                 <motion.h1
                                     variants={itemVariants}
-                                    className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-base-content"
+                                    className="text-[2.25rem] leading-[1.12] sm:text-5xl sm:leading-[1.08] md:text-6xl lg:text-7xl font-bold tracking-tight text-base-content text-balance"
                                 >
                                     {slide.title}
                                 </motion.h1>
 
                                 <motion.p
                                     variants={itemVariants}
-                                    className="text-lg text-base-content/70 max-w-xl leading-relaxed"
+                                    className="text-base sm:text-lg text-base-content/70 max-w-xl mx-auto lg:mx-0 leading-relaxed"
                                 >
                                     {slide.description}
                                 </motion.p>
 
                                 <motion.div
                                     variants={itemVariants}
-                                    className="flex flex-wrap gap-4 pt-2"
+                                    className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-4 pt-2"
                                 >
-                                    <button className="btn btn-primary btn-lg shadow-lg shadow-primary/20">
+                                    <button className="btn btn-primary btn-md sm:btn-lg shadow-lg shadow-primary/20">
                                         Explore Cars
                                     </button>
 
-                                    <button className="btn btn-outline btn-lg border-base-content/20 text-base-content hover:bg-base-content hover:text-base-100">
+                                    <button className="btn btn-outline btn-md sm:btn-lg border-base-content/20 text-base-content hover:bg-base-content hover:text-base-100">
                                         Book Test Drive
                                     </button>
                                 </motion.div>
 
                                 <motion.div
                                     variants={itemVariants}
-                                    className="flex gap-8 pt-6 border-t border-base-content/10 mt-2"
+                                    className="flex flex-wrap justify-center lg:justify-start gap-6 sm:gap-8 pt-6 border-t border-base-content/10 mt-2"
                                 >
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-base-content">
-                                            500+
-                                        </h3>
-                                        <p className="text-sm text-base-content/60">
-                                            Available Cars
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-base-content">
-                                            10K+
-                                        </h3>
-                                        <p className="text-sm text-base-content/60">
-                                            Happy Customers
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-base-content">
-                                            24/7
-                                        </h3>
-                                        <p className="text-sm text-base-content/60">
-                                            Support
-                                        </p>
-                                    </div>
+                                    {stats.map((stat) => (
+                                        <div key={stat.label}>
+                                            <h3 className="text-xl sm:text-2xl font-bold text-base-content">
+                                                {stat.value}
+                                            </h3>
+                                            <p className="text-xs sm:text-sm text-base-content/60 whitespace-nowrap">
+                                                {stat.label}
+                                            </p>
+                                        </div>
+                                    ))}
                                 </motion.div>
                             </motion.div>
 
                             {/* Right Image */}
                             <motion.div
-                                className="flex-1 w-full"
+                                className="flex-1 w-full max-w-md lg:max-w-none"
                                 initial={{ opacity: 0, x: 100 }}
                                 whileInView={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 1 }}
                             >
-                                <div className="relative w-full aspect-[4/3] lg:aspect-[16/12] rounded-2xl overflow-hidden shadow-2xl shadow-base-content/10 bg-base-200">
+                                <div className="relative w-full aspect-[4/3] lg:aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl shadow-base-content/10 bg-base-200">
                                     <motion.img
                                         src={slide.image}
                                         alt={slide.title}
@@ -210,22 +214,24 @@ const Hero1 = () => {
                                             ease: "easeInOut",
                                         }}
                                     />
+                                    {/* subtle depth overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                                 </div>
                             </motion.div>
                         </div>
                     </SwiperSlide>
                 ))}
 
-                {/* Custom navigation arrows: hidden until the hero is hovered */}
+                {/* Custom navigation arrows: desktop only, revealed on hero hover */}
                 <button
                     aria-label="Previous slide"
-                    className="hero-prev cursor-pointer absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 z-10 items-center justify-center w-11 h-11 rounded-full bg-base-100/90 shadow-md border border-base-content/10 hover:bg-base-100 hover:scale-105 transition-all duration-300 hidden lg:flex"
+                    className="hero-prev cursor-pointer absolute left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 z-10 items-center justify-center w-11 h-11 rounded-full bg-base-100/90 shadow-md border border-base-content/10 hover:bg-base-100 hover:scale-105 transition-all duration-300 hidden lg:flex"
                 >
                     <BiChevronLeft className="w-6 h-6 text-base-content" />
                 </button>
                 <button
                     aria-label="Next slide"
-                    className="hero-next cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 z-10 items-center justify-center w-11 h-11 rounded-full bg-base-100/90 shadow-md border border-base-content/10 hover:bg-base-100 hover:scale-105 transition-all duration-300 hidden lg:flex"
+                    className="hero-next cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 z-10 items-center justify-center w-11 h-11 rounded-full bg-base-100/90 shadow-md border border-base-content/10 hover:bg-base-100 hover:scale-105 transition-all duration-300 hidden lg:flex"
                 >
                     <BiChevronRight className="w-6 h-6 text-base-content" />
                 </button>
