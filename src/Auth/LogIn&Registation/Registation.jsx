@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash, FaCamera } from 'react-icons/fa';
+import { Link } from 'react-router';
+import { AuthContext } from '../AuthProvider/AuthProvider';
 
 const Registration = () => {
+    const {registerUser} = use(AuthContext);
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(null);
@@ -18,6 +22,12 @@ const Registration = () => {
     const handlerRegister = (e) => {
 
         console.log(e.name, e.email, e.image,e.password,e.confarmPassword);
+        registerUser(e.email,e.password)
+        .then(res=>{
+            console.log(res.user);
+        }).catch(erro=>{
+            console.log(erro.message);
+        })
 
     }
 
@@ -45,9 +55,9 @@ const Registration = () => {
                     </h2>
                     <p className="font-body text-sm  mt-2">
                         Already have one?{' '}
-                        <a href="#" className="text-teal-700 font-medium hover:text-teal-800">
+                        <Link to={'/auth'} className="text-teal-700 font-medium hover:text-teal-800">
                             Log in instead
-                        </a>
+                        </Link>
                     </p>
                 </div>
 

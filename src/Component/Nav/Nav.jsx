@@ -68,20 +68,11 @@ const Nav = () => {
 
     return (
         <>
-            {/*
-                Using `fixed` instead of `sticky` on purpose: `sticky` silently
-                breaks (the bar scrolls away) if ANY parent element up the tree
-                has `overflow: hidden/auto/scroll` set — very easy to hit by
-                accident (e.g. a wrapper div with `overflow-x-hidden` to kill
-                horizontal scroll). `fixed` positions relative to the viewport
-                and ignores parent overflow, so it always stays put.
-                The spacer div right below reserves the same height so page
-                content doesn't jump underneath it.
-            */}
+
             <div
                 className={`fixed top-0 left-0 right-0 z-50 w-full bg-base-100/80 backdrop-blur-md transition-shadow duration-300 ${scrolled
-                        ? "shadow-md border-b border-base-content/5"
-                        : "border-b border-transparent"
+                    ? "shadow-md border-b border-base-content/5"
+                    : "border-b border-transparent"
                     }`}
             >
                 <div className={`navbar max-w-7xl mx-auto px-4 sm:px-6 lg:px-7 ${NAV_HEIGHT}`}>
@@ -152,7 +143,7 @@ const Nav = () => {
                         </button>
 
                         <Link
-                            to="/login"
+                            to="/auth"
                             className="btn btn-primary btn-sm sm:btn-md shadow-lg shadow-primary/20 cursor-pointer"
                         >
                             Login
@@ -180,8 +171,8 @@ const Nav = () => {
                 onClick={() => setMenuOpen(false)}
                 aria-hidden="true"
                 className={`fixed inset-0 z-[90] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ease-in-out lg:hidden ${menuOpen
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
                     }`}
             />
 
@@ -285,7 +276,7 @@ const Nav = () => {
                         )}
                     </button>
                     <Link
-                        to="/login"
+                        to="/auth"
                         onClick={() => setMenuOpen(false)}
                         className="btn btn-primary btn-block shadow-lg shadow-primary/20"
                     >

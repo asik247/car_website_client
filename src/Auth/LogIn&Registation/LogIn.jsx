@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Link } from 'react-router';
 
 const LogIn = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +29,9 @@ const LogIn = () => {
                     </h1>
                     <p className="font-body text-sm mt-2">
                         New here?{' '}
-                        <a href="#" className="text-teal-700 font-medium hover:text-teal-800">
+                        <Link to={'/auth/registation'} className="text-teal-700 font-medium hover:text-teal-800">
                             Create an account
-                        </a>
+                        </Link>
                     </p>
                 </div>
 
