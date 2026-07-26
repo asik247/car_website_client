@@ -1,15 +1,22 @@
 import React, { use, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash, FaCamera } from 'react-icons/fa';
+import { FaCircleExclamation } from "react-icons/fa6";
 import { Link } from 'react-router';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 
 const Registration = () => {
-    const {registerUser} = use(AuthContext);
+    const { registerUser } = use(AuthContext);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(null);
+    //Todo  state here;
+    const [message, setMessage] = useState({
+        type: '',
+        text: ''
+    });
+
 
     // Purely visual: shows a live preview of the chosen photo.
     // Wire up real upload/validation/submit logic yourself.
@@ -18,16 +25,25 @@ const Registration = () => {
         if (file) setAvatarPreview(URL.createObjectURL(file));
     };
     //Todo react hook from using get input field data and validation.
-    const { register, handleSubmit,formState:{errors} } = useForm();
-    const handlerRegister = (e) => {
-
+    const { register, handleSubmit, watch, formState: { errors } } = useForm();
+    const password = watch("password");
+    const handlerRegister = (data) => {
         // console.log(e.name, e.email, e.image,e.password,e.confarmPassword);
-        registerUser(e.email,e.password)
-        .then(res=>{
-            console.log(res.user);
-        }).catch(erro=>{
-            console.log(erro.message);
-        })
+
+        registerUser(data.email, data.password)
+            .then(() => {
+                setMessage({
+                    type: 'success',
+                    text: 'Register done'
+                })
+
+            }).catch(() => {
+                setMessage({
+                    type: 'error',
+                    text: 'Register Field'
+                })
+
+            })
 
     }
 
@@ -43,7 +59,7 @@ const Registration = () => {
             <div className="w-full max-w-lg  rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/5 p-8 sm:p-10">
                 {/* Brand mark */}
                 <div className="flex items-center justify-center gap-2 mb-8">
-                    <div className="w-7 h-7 rounded-full bg-teal-600" />
+                    <div className="w-7 h-7 rounded-full bg-primary" />
                     <span className="font-mono text-xs tracking-widest uppercase">
                         Basecamp Studio
                     </span>
@@ -55,135 +71,235 @@ const Registration = () => {
                     </h2>
                     <p className="font-body text-sm  mt-2">
                         Already have one?{' '}
-                        <Link to={'/auth'} className="text-teal-700 font-medium hover:text-teal-800">
+                        <Link to={'/auth'} className="text-primary font-medium hover:text-teal-800">
                             Log in instead
                         </Link>
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-5 w-full " onSubmit={handleSubmit(handlerRegister)}>
-                    {/* Avatar upload */}
+                <form
+                    className="mt-8 space-y-5 w-full"
+                    onSubmit={handleSubmit(handlerRegister)}
+                >
+                    {/* Avatar Upload */}
                     <div className="flex items-center gap-4">
                         <div className="relative shrink-0">
-                            <div className="w-16 h-16 rounded-full  border border-slate-200 flex items-center justify-center overflow-hidden">
+                            <div className="w-16 h-16 rounded-full border border-base-300 flex items-center justify-center overflow-hidden">
                                 {avatarPreview ? (
-                                    <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
+                                    <img
+                                        src={avatarPreview}
+                                        alt="Avatar Preview"
+                                        className="w-full h-full object-cover"
+                                    />
                                 ) : (
-                                    <FaUser className="w-6 h-6" />
+                                    <FaUser className="w-6 h-6 text-primary" />
                                 )}
                             </div>
+
                             <label
                                 htmlFor="photo"
-                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-teal-700 flex items-center justify-center cursor-pointer border-2 border-white hover:bg-teal-800 transition-colors"
+                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center cursor-pointer"
                             >
-                                <FaCamera className="w-3 h-3 " />
+                                <FaCamera className="w-3 h-3" />
                             </label>
-                            <input {...register('image')} id="photo" type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+
+                            <input
+                                {...register("image")}
+                                id="photo"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handlePhotoChange}
+                            />
                         </div>
+
                         <div>
-                            <p className="font-body text-sm font-medium ">Profile photo</p>
-                            <p className="font-mono text-[11px]  mt-0.5">PNG or JPG, up to 5MB</p>
+                            <p className="text-sm font-medium">Profile photo</p>
+                            <p className="text-xs opacity-70">PNG or JPG, up to 5MB</p>
                         </div>
                     </div>
 
                     {/* Name */}
                     <div>
-                        <label htmlFor="name" className="font-body text-sm font-medium block mb-1.5">
-                            Full name
+                        <label htmlFor="name" className="text-sm font-medium block mb-2">
+                            Full Name
                         </label>
+
                         <div className="relative">
-                            <FaUser className="w-4 h-4  absolute left-3 top-1/2 -translate-y-1/2" />
+                            <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+
                             <input
-                              {...register("name", { required: true })}
-                              
+                                {...register("name", {
+                                    required: "Full name is required",
+                                })}
                                 id="name"
                                 type="text"
-                                placeholder="Jamie Rivera"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                placeholder="John Doe"
+                                className={`w-full rounded-lg border pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.name
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
-                            {errors?.name && <span>This field is requered</span>}
                         </div>
+
+                        {errors.name && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.name.message}
+                            </p>
+                        )}
                     </div>
 
                     {/* Email */}
                     <div>
-                        <label htmlFor="email" className="font-body text-sm font-medium  block mb-1.5">
-                            Email address
+                        <label htmlFor="email" className="text-sm font-medium block mb-2">
+                            Email Address
                         </label>
+
                         <div className="relative">
-                            <FaEnvelope className="w-4 h-4  absolute left-3 top-1/2 -translate-y-1/2" />
+                            <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+
                             <input
-                                {...register('email')}
+                                {...register("email", {
+                                    required: "Email is required",
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: "Please enter a valid email",
+                                    },
+                                })}
                                 id="email"
                                 type="email"
                                 placeholder="you@example.com"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm  placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                className={`w-full rounded-lg border pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.email
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
                         </div>
+
+                        {errors.email && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.email.message}
+                            </p>
+                        )}
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label htmlFor="password" className="font-body text-sm font-medium  block mb-1.5">
+                        <label htmlFor="password" className="text-sm font-medium block mb-2">
                             Password
                         </label>
+
                         <div className="relative">
-                            <FaLock className="w-4 h-4  absolute left-3 top-1/2 -translate-y-1/2" />
+                            <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+
                             <input
-                                {...register('password')}
+                                {...register("password", {
+                                    required: "Password is required",
+                                    minLength: {
+                                        value: 6,
+                                        message: "Password must be at least 6 characters",
+                                    },
+                                    pattern: {
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+                                        message:
+                                            "Must contain uppercase, lowercase and a number",
+                                    },
+                                })}
                                 id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="At least 8 characters"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-10 py-2.5 text-sm  placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                type={showPassword ? "text" : "password"}
+                                placeholder="At least 6 characters"
+                                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.password
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
+
                             <button
                                 type="button"
-                                onClick={() => setShowPassword((v) => !v)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
                             >
-                                {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
+
+                        {errors.password && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.password.message}
+                            </p>
+                        )}
                     </div>
 
-                    {/* Confirm password */}
+                    {/* Confirm Password */}
                     <div>
-                        <label htmlFor="confirm" className="font-body text-sm font-medium  block mb-1.5">
-                            Confirm password
+                        <label htmlFor="confirmPassword" className="text-sm font-medium block mb-2">
+                            Confirm Password
                         </label>
+
                         <div className="relative">
-                            <FaLock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" />
+
                             <input
-                                {...register('confarmPassword')}
-                                id="confirm"
-                                type={showConfirm ? 'text' : 'password'}
+                                {...register("confirmPassword", {
+                                    required: "Confirm password is required",
+                                    validate: (value) =>
+                                        value === password || "Passwords do not match",
+                                })}
+                                id="confirmPassword"
+                                type={showConfirm ? "text" : "password"}
                                 placeholder="Re-enter your password"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-10 py-2.5 text-sm  placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.confirmPassword
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
+
                             <button
                                 type="button"
-                                onClick={() => setShowConfirm((v) => !v)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-                                aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                                onClick={() => setShowConfirm(!showConfirm)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
                             >
-                                {showConfirm ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
+                                {showConfirm ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
+
+                        {errors.confirmPassword && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.confirmPassword.message}
+                            </p>
+                        )}
                     </div>
 
+                    {/* Submit Button */}
                     <button
                         type="submit"
-                        className="font-body w-full rounded-lg bg-teal-700 hover:bg-teal-800  text-sm font-medium py-2.5 mt-2 shadow-sm shadow-teal-900/10 transition-colors"
+                        className="w-full rounded-lg bg-primary text-primary-content py-3 font-medium hover:opacity-90 transition-all"
                     >
-                        Create account
+                        Create Account
                     </button>
 
-                    <p className="font-body text-[13px] text-slate-400 text-center pt-1">
-                        By continuing you agree to our{' '}
-                        <a href="#" className="underline hover:text-slate-600">Terms</a> and{' '}
-                        <a href="#" className="underline hover:text-slate-600">Privacy Policy</a>.
+                    <p className="text-center text-sm opacity-70">
+                        By continuing you agree to our{" "}
+                        <a href="#" className="text-primary underline">
+                            Terms
+                        </a>{" "}
+                        and{" "}
+                        <a href="#" className="text-primary underline">
+                            Privacy Policy
+                        </a>
+                        .
                     </p>
+                    <div className='mt-4'>
+                        {
+                            message.text && (
+                                <p className={`${message.type =='success'? 'text-green-500':'text-red-500'}`}>{message.text}</p>
+                            )
+                        }
+                    </div>
                 </form>
             </div>
         </div>
