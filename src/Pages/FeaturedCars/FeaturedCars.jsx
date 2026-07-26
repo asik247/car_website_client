@@ -8,8 +8,6 @@ const CATEGORIES = [ 'Hybrid Hypercar','Grand Tourer',  'Sports Car'];
 const FeaturedCars = () => {
     const instance = useInstance();
     const [category, setCategory] = useState('');
-    console.log(category);
-
     //! tanstack query, fetch cars from db, refetches whenever category changes
     const { data: cars = [], isLoading, error } = useQuery({
         queryKey: ['cars', category],

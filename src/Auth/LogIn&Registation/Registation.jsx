@@ -18,10 +18,10 @@ const Registration = () => {
         if (file) setAvatarPreview(URL.createObjectURL(file));
     };
     //Todo react hook from using get input field data and validation.
-    const { register, handleSubmit } = useForm();
+    const { register, handleSubmit,formState:{errors} } = useForm();
     const handlerRegister = (e) => {
 
-        console.log(e.name, e.email, e.image,e.password,e.confarmPassword);
+        // console.log(e.name, e.email, e.image,e.password,e.confarmPassword);
         registerUser(e.email,e.password)
         .then(res=>{
             console.log(res.user);
@@ -94,12 +94,14 @@ const Registration = () => {
                         <div className="relative">
                             <FaUser className="w-4 h-4  absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
-                                {...register('name')}
+                              {...register("name", { required: true })}
+                              
                                 id="name"
                                 type="text"
                                 placeholder="Jamie Rivera"
                                 className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
                             />
+                            {errors?.name && <span>This field is requered</span>}
                         </div>
                     </div>
 
