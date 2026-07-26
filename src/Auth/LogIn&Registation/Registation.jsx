@@ -32,9 +32,10 @@ const Registration = () => {
 
         registerUser(data.email, data.password)
             .then(() => {
+                //Todo email verification ?
                 setMessage({
                     type: 'success',
-                    text: 'Register done'
+                    text: 'Register Done'
                 })
 
             }).catch(() => {
@@ -293,7 +294,7 @@ const Registration = () => {
                         </a>
                         .
                     </p>
-                    <div className='mt-4'>
+                    <div className='mt-4 text-center text-sm md:text-2xl font-bold'>
                         {
                             message.text && (
                                 <p className={`${message.type =='success'? 'text-green-500':'text-red-500'}`}>{message.text}</p>

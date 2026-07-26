@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link } from 'react-router';
+import useAuth from '../../Hooks/useAuth';
+import { useForm } from 'react-hook-form';
+import { FaCircleExclamation } from 'react-icons/fa6';
 
 const LogIn = () => {
+    const { logInUser } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
+    //Todo handler LogIn user.
+    const { register, handleSubmit, formState: { errors } } = useForm()
+
+    const handlerLogIn = (data) => {
+        console.log('name', data.email);
+    }
+
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center px-4 py-14">
@@ -17,7 +28,7 @@ const LogIn = () => {
             <div className="w-full max-w-sm  rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/5 p-8 sm:p-10">
                 {/* Brand mark */}
                 <div className="flex items-center justify-center gap-2 mb-8">
-                    <div className="w-7 h-7 rounded-full bg-teal-600" />
+                    <div className="w-7 h-7 rounded-full bg-primary" />
                     <span className="font-mono text-xs tracking-widest uppercase text-slate-500">
                         Basecamp Studio
                     </span>
@@ -29,13 +40,13 @@ const LogIn = () => {
                     </h1>
                     <p className="font-body text-sm mt-2">
                         New here?{' '}
-                        <Link to={'/auth/registation'} className="text-teal-700 font-medium hover:text-teal-800">
+                        <Link to={'/auth/registation'} className="text-primary font-medium hover:text-teal-800">
                             Create an account
                         </Link>
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-5" onSubmit={(e) => e.preventDefault()}>
+                <form className="mt-8 space-y-5" onSubmit={handleSubmit(handlerLogIn)}>
                     {/* Email */}
                     <div>
                         <label htmlFor="email" className="font-body text-sm font-medium  block mb-1.5">
@@ -44,12 +55,19 @@ const LogIn = () => {
                         <div className="relative">
                             <FaEnvelope className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
+                                {...register('email', { required: 'Email is required' })}
                                 id="email"
                                 type="email"
                                 placeholder="you@example.com"
                                 className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
                             />
                         </div>
+                        {errors.email && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.email.message}
+                            </p>
+                        )}
                     </div>
 
                     {/* Password */}
