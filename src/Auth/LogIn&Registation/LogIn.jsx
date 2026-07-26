@@ -8,11 +8,25 @@ import { FaCircleExclamation } from 'react-icons/fa6';
 const LogIn = () => {
     const { logInUser } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
+    const [success, setSuccess] = useState('')
     //Todo handler LogIn user.
-    const { register, handleSubmit, formState: { errors } } = useForm()
+    const { register, handleSubmit, setError, formState: { errors } } = useForm()
 
     const handlerLogIn = (data) => {
-        console.log('name', data.email);
+        // console.log('name', data.email);
+        setSuccess('')
+        logInUser(data.email, data.password)
+            .then((res) => {
+                // console.log(res.user);
+
+                setSuccess('Login done')
+
+            }).catch(() => {
+                setError('root', {
+                    type: 'maniul',
+                    message: 'LogIn failed'
+                })
+            })
     }
 
 
@@ -59,7 +73,10 @@ const LogIn = () => {
                                 id="email"
                                 type="email"
                                 placeholder="you@example.com"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.email
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
                         </div>
                         {errors.email && (
@@ -76,6 +93,7 @@ const LogIn = () => {
                             <label htmlFor="password" className="font-body text-sm font-medium ">
                                 Password
                             </label>
+                            {/* funk implement */}
                             <a href="#" className="font-body text-xs  hover:text-primary">
                                 Forgot password?
                             </a>
@@ -83,10 +101,23 @@ const LogIn = () => {
                         <div className="relative">
                             <FaLock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             <input
+                                {...register('password', {
+                                    required: 'Password is required', minLength: {
+                                        value: 6,
+                                        message: "Password must be at least 6 characters",
+                                    }, pattern: {
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+                                        message:
+                                            "Must contain uppercase, lowercase and a number",
+                                    },
+                                })}
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Enter your password"
-                                className="font-body w-full rounded-lg border border-slate-200 pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/30 focus:border-teal-600 transition-colors"
+                                className={`w-full rounded-lg border pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${errors.password
+                                    ? "border-error focus:ring-error/30"
+                                    : "border-base-300 focus:ring-primary/30 focus:border-primary"
+                                    }`}
                             />
                             <button
                                 type="button"
@@ -97,6 +128,13 @@ const LogIn = () => {
                                 {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
                             </button>
                         </div>
+                        {/* show error when not filup password field */}
+                        {errors.password && (
+                            <p className="flex items-center gap-1 text-error text-sm mt-2">
+                                <FaCircleExclamation />
+                                {errors.password.message}
+                            </p>
+                        )}
                     </div>
 
                     <button
@@ -105,6 +143,17 @@ const LogIn = () => {
                     >
                         Log in
                     </button>
+                    {/* error message show */}
+                    <div className='text-sm md:text-2xl font-bold text-center'>
+                        {
+                            errors.root && <p className='text-red-500 text-xl'>{errors.root.message}</p>
+                        }
+                    </div>
+                    <div className='text-sm md:text-2xl font-bold text-center'>
+                        {
+                            success && <p className='text-green-500 text-xl'>{success}</p>
+                        }
+                    </div>
                 </form>
             </div>
         </div>

@@ -41,7 +41,7 @@ const Registration = () => {
             }).catch(() => {
                 setMessage({
                     type: 'error',
-                    text: 'Register Field'
+                    text: 'Register failed'
                 })
 
             })
