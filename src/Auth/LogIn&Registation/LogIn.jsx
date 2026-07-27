@@ -4,15 +4,15 @@ import { Link } from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { FaCircleExclamation } from 'react-icons/fa6';
+import Swal from 'sweetalert2';
 
 const LogIn = () => {
-    const { logInUser,user,loading } = useAuth();
-    console.log('current User',user);
+    const { logInUser, user, forgotPassword, loading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('')
-    //Todo handler LogIn user.
-    const { register, handleSubmit, setError, formState: { errors } } = useForm()
 
+    //Todo handler LogIn user.
+    const { register, handleSubmit, watch, setError, formState: { errors } } = useForm()
     const handlerLogIn = (data) => {
         // console.log('name', data.email);
         setSuccess('')
@@ -29,8 +29,33 @@ const LogIn = () => {
                 })
             })
     }
+    //Todo handler password update.
+    const userEmail = watch('email');
+    const handlerPasswordUpdate = (e) => {
+        e.preventDefault()
+        if (!userEmail) {
+            Swal.fire({
+                icon: "error",
+                title: "Please enter your email first!",
+                showConfirmButton: false,
+                timer: 1500
+            });
+            return;
+        }
+        forgotPassword(userEmail)
+            .then(() => {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Checked Your email and update password!",
+                    timer: 1500
+                });
+            }).catch(err => {
+                console.log(err.message);
+            })
+    }
 
-    if(loading){
+    if (loading) {
         return <p>Loading...</p>
     }
     return (
@@ -97,9 +122,9 @@ const LogIn = () => {
                                 Password
                             </label>
                             {/* funk implement */}
-                            <a href="#" className="font-body text-xs  hover:text-primary">
+                            < button onClick={handlerPasswordUpdate} className="font-body text-xs cursor-pointer hover:text-primary">
                                 Forgot password?
-                            </a>
+                            </button>
                         </div>
                         <div className="relative">
                             <FaLock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -131,6 +156,7 @@ const LogIn = () => {
                                 {showPassword ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
                             </button>
                         </div>
+
                         {/* show error when not filup password field */}
                         {errors.password && (
                             <p className="flex items-center gap-1 text-error text-sm mt-2">
@@ -139,6 +165,7 @@ const LogIn = () => {
                             </p>
                         )}
                     </div>
+
 
                     <button
                         type="submit"

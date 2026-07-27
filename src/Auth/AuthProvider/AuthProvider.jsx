@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import React, { createContext, useEffect, useState } from 'react';
 import { auth } from '../../Firebase/firebase.init';
 export const AuthContext = createContext(null);
@@ -23,6 +23,10 @@ const [loading,setLoading] = useState(true);
     const verifyEmail = ()=>{
         return sendEmailVerification(auth.currentUser)
     }
+    //Todo forgot password.
+    const forgotPassword = (userEmail)=>{
+        return sendPasswordResetEmail(auth,userEmail)
+    }
 
 
     //? onAuthStateChange implemt.
@@ -44,7 +48,8 @@ const [loading,setLoading] = useState(true);
         logInUser,
         user,
         loading,
-        verifyEmail
+        verifyEmail,
+        forgotPassword
     }
     return <AuthContext.Provider value={usersInfo}>
         {children}
