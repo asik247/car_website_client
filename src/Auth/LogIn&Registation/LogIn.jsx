@@ -6,7 +6,8 @@ import { useForm } from 'react-hook-form';
 import { FaCircleExclamation } from 'react-icons/fa6';
 
 const LogIn = () => {
-    const { logInUser } = useAuth();
+    const { logInUser,user,loading } = useAuth();
+    console.log('current User',user);
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('')
     //Todo handler LogIn user.
@@ -29,7 +30,9 @@ const LogIn = () => {
             })
     }
 
-
+    if(loading){
+        return <p>Loading...</p>
+    }
     return (
         <div className="min-h-screen w-full flex items-center justify-center px-4 py-14">
             <style>{`

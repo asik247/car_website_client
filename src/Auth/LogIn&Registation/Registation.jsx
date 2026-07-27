@@ -4,9 +4,10 @@ import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash, FaCamera } from 'react-i
 import { FaCircleExclamation } from "react-icons/fa6";
 import { Link } from 'react-router';
 import { AuthContext } from '../AuthProvider/AuthProvider';
+import Swal from 'sweetalert2';
 
 const Registration = () => {
-    const { registerUser } = use(AuthContext);
+    const { registerUser, verifyEmail } = use(AuthContext);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -32,6 +33,14 @@ const Registration = () => {
 
         registerUser(data.email, data.password)
             .then(() => {
+                verifyEmail()
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "please verify your email",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
                 //Todo email verification ?
                 setMessage({
                     type: 'success',
@@ -297,7 +306,7 @@ const Registration = () => {
                     <div className='mt-4 text-center text-sm md:text-2xl font-bold'>
                         {
                             message.text && (
-                                <p className={`${message.type =='success'? 'text-green-500':'text-red-500'}`}>{message.text}</p>
+                                <p className={`${message.type == 'success' ? 'text-green-500' : 'text-red-500'}`}>{message.text}</p>
                             )
                         }
                     </div>
