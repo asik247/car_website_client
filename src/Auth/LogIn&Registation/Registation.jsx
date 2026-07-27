@@ -58,7 +58,7 @@ const Registration = () => {
                         }
                         updateUserInfo(updateInfo)
                         .then(()=>{
-                            console.log('update successfully');
+                            // console.log('update successfully');
                         })
                         // console.log(updateInfo);
 
