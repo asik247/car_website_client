@@ -21,7 +21,7 @@ const pagesLinks = [
 
 const Nav = () => {
     //Todo currentUser.
-    const { user, loading } = useAuth()
+    const { user, loading, logOutUser } = useAuth()
     console.log('currentUser', user);
 
     const [theme, setTheme] = useState(
@@ -70,6 +70,15 @@ const Nav = () => {
             ? "bg-primary/10 text-primary"
             : "text-base-content hover:bg-base-content/5"
         }`;
+
+
+    //? handlerLogOut.
+    const handlerLogOut = () => {
+        logOutUser()
+            .then(() => {
+                console.log('yes you logout');
+            })
+    }
     //Todo loading...
     if (loading) {
         return <p>Loading...</p>
@@ -150,23 +159,24 @@ const Nav = () => {
                             )}
                         </button>
 
-                        {/* conditionaly sow login/logout */}
                         {
-                            user ? <Link
-                                to="/auth"
-                                // onClick={() => setMenuOpen(false)}
-                                className="btn btn-primary btn-block shadow-lg shadow-primary/20"
-                            >
-                                Login
-                            </Link> : <Link
-                                to="/auth"
-                                onClick={() => setMenuOpen(false)}
-                                className="btn btn-primary btn-block shadow-lg shadow-primary/20"
-                            >
-                                Login
-                            </Link>
+                            user ? (
+                                <button
+                                    onClick={handlerLogOut}
+                                    className="btn btn-primary"
+                                >
+                                    Logout
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/auth"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="btn btn-primary"
+                                >
+                                    Login
+                                </Link>
+                            )
                         }
-
                         {/* Mobile hamburger toggle — bordered so it reads clearly as a button on any background */}
                         <button
                             onClick={() => setMenuOpen(true)}
@@ -293,21 +303,23 @@ const Nav = () => {
                             </>
                         )}
                     </button>
-                    {/* conditionaly sow login/logout */}
                     {
-                        user ? <button
-
-
-                            className="btn btn-primary btn-block shadow-lg shadow-primary/20"
-                        >
-                            Logout
-                        </button> : <Link
-                            to="/auth"
-                            onClick={() => setMenuOpen(false)}
-                            className="btn btn-primary btn-block shadow-lg shadow-primary/20"
-                        >
-                            Login
-                        </Link>
+                        user ? (
+                            <button
+                                onClick={handlerLogOut}
+                                className="btn btn-primary"
+                            >
+                                Logout
+                            </button>
+                        ) : (
+                            <Link
+                                to="/auth"
+                                onClick={() => setMenuOpen(false)}
+                                className="btn btn-primary"
+                            >
+                                Login
+                            </Link>
+                        )
                     }
 
                 </div>

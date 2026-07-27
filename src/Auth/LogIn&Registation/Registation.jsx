@@ -8,21 +8,41 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 const Registration = () => {
-    const { registerUser, verifyEmail,updateUserInfo } = use(AuthContext);
+    const { registerUser, verifyEmail, updateUserInfo } = use(AuthContext);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    //Todo  state here;
+    // Todo state here;
     const [message, setMessage] = useState({
         type: '',
         text: ''
     });
 
-    //Todo react hook from using get input field data and validation.
+    // ✅ new state: preview URL for the selected profile image
+    const [imagePreview, setImagePreview] = useState(null);
+
+    // Todo react hook from using get input field data and validation.
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
     const password = watch("password");
+
+    // ✅ react-hook-form's register() returns { onChange, onBlur, name, ref }
+    // we destructure it so we can hook our own onChange (for the live preview)
+    // in ADDITION to react-hook-form's onChange, without losing form registration.
+    const { onChange: rhfImageOnChange, ...imageRegisterRest } = register("image");
+
+    const handleImageChange = (e) => {
+        rhfImageOnChange(e); // keep react-hook-form in sync
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setImagePreview(url);
+        } else {
+            setImagePreview(null);
+        }
+    };
+
     const handlerRegister = (data) => {
-        //Todo get user img in input field.
+        // Todo get user img in input field.
         const userImage = data.image[0]
         // console.log(userImage);
         registerUser(data.email, data.password)
@@ -53,20 +73,20 @@ const Registration = () => {
                         // ? update displayName + photourl.
                         const updateInfo = {
                             displayName: data.name,
-                            photoURL:res.data.data.url
+                            photoURL: res.data.data.url
 
                         }
                         updateUserInfo(updateInfo)
-                        .then(()=>{
-                            // console.log('update successfully');
-                        })
+                            .then(() => {
+                                // console.log('update successfully');
+                            })
                         // console.log(updateInfo);
 
                     })
                     .catch(err => {
                         console.log(err);
                     });
-            
+
 
             }).catch(() => {
                 setMessage({
@@ -97,12 +117,12 @@ const Registration = () => {
                 </div>
 
                 <div className="text-center">
-                    <h2 className="font-display text-3xl font-medium ">
+                    <h2 className="font-display text-3xl font-medium">
                         Create your account
                     </h2>
-                    <p className="font-body text-sm  mt-2">
+                    <p className="font-body text-sm mt-2 opacity-70">
                         Already have one?{' '}
-                        <Link to={'/auth'} className="text-primary font-medium hover:text-teal-800">
+                        <Link to={'/auth'} className="text-primary font-bold hover:text-blue-800">
                             Log in instead
                         </Link>
                     </p>
@@ -112,6 +132,43 @@ const Registration = () => {
                     className="mt-8 space-y-5 w-full"
                     onSubmit={handleSubmit(handlerRegister)}
                 >
+
+                    {/* ✅ Avatar Upload with live preview */}
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="relative shrink-0">
+                            <div className="w-24 h-24 rounded-full border-2 border-dashed border-slate-300 bg-slate-50 overflow-hidden flex items-center justify-center">
+                                {imagePreview ? (
+                                    <img
+                                        src={imagePreview}
+                                        alt="Profile preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <FaUser className="w-8 h-8 text-slate-300" />
+                                )}
+                            </div>
+
+                            <label
+                                htmlFor="photo"
+                                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center cursor-pointer shadow-md hover:opacity-90 transition-all"
+                                title="Upload profile photo"
+                            >
+                                <FaCamera className="w-3.5 h-3.5" />
+                            </label>
+
+                            <input
+                                {...imageRegisterRest}
+                                onChange={handleImageChange}
+                                id="photo"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                            />
+                        </div>
+                        <p className="text-xs opacity-60 font-body">
+                            {imagePreview ? 'Looking good — tap the camera to change it' : 'Add a profile photo (optional)'}
+                        </p>
+                    </div>
 
                     {/* Name */}
                     <div>
@@ -142,29 +199,6 @@ const Registration = () => {
                                 {errors.name.message}
                             </p>
                         )}
-                    </div>
-                    {/* Avatar Upload */}
-                    <div className="flex items-center gap-4">
-                        <div className="relative shrink-0">
-
-                            <label
-                                htmlFor="photo"
-                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center cursor-pointer"
-                            >
-                                <FaCamera className="w-3 h-3" />
-                            </label>
-
-                            <input
-                                {...register("image")}
-                                id="photo"
-                                type="file"
-
-
-
-                            />
-                        </div>
-
-
                     </div>
 
                     {/* Email */}
@@ -294,7 +328,7 @@ const Registration = () => {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full rounded-lg bg-primary text-primary-content py-3 font-medium hover:opacity-90 transition-all"
+                        className="w-full rounded-lg bg-primary text-primary-content py-3 font-medium hover:opacity-90 transition-all shadow-sm"
                     >
                         Create Account
                     </button>

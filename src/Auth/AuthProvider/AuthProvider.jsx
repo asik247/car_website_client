@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import React, { createContext, useEffect, useState } from 'react';
 import { auth } from '../../Firebase/firebase.init';
 export const AuthContext = createContext(null);
@@ -18,6 +18,10 @@ const [loading,setLoading] = useState(true);
     //Todo logIn Users.
     const logInUser = (email, password) => {
         return signInWithEmailAndPassword(auth, email, password)
+    }
+    //Todo logOut User.
+    const logOutUser = ()=>{
+        return signOut(auth)
     }
     //Todo verifyEmail.
     const verifyEmail = ()=>{
@@ -50,6 +54,7 @@ const [loading,setLoading] = useState(true);
     const usersInfo = {
         registerUser,
         logInUser,
+        logOutUser,
         user,
         loading,
         verifyEmail,
