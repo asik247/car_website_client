@@ -5,34 +5,29 @@ import { FaCircleExclamation } from "react-icons/fa6";
 import { Link } from 'react-router';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const Registration = () => {
-    const { registerUser, verifyEmail } = use(AuthContext);
+    const { registerUser, verifyEmail,updateUserInfo } = use(AuthContext);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [avatarPreview, setAvatarPreview] = useState(null);
     //Todo  state here;
     const [message, setMessage] = useState({
         type: '',
         text: ''
     });
 
-
-    // Purely visual: shows a live preview of the chosen photo.
-    // Wire up real upload/validation/submit logic yourself.
-    const handlePhotoChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) setAvatarPreview(URL.createObjectURL(file));
-    };
     //Todo react hook from using get input field data and validation.
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
     const password = watch("password");
     const handlerRegister = (data) => {
-        // console.log(e.name, e.email, e.image,e.password,e.confarmPassword);
-
+        //Todo get user img in input field.
+        const userImage = data.image[0]
+        // console.log(userImage);
         registerUser(data.email, data.password)
-            .then(() => {
+            .then((res) => {
+                console.log(res.user);
                 verifyEmail()
                 Swal.fire({
                     position: "top-end",
@@ -46,6 +41,32 @@ const Registration = () => {
                     type: 'success',
                     text: 'Register Done'
                 })
+                //? image get.
+                const formData = new FormData();
+                formData.append('image', userImage)
+                //? apis here.
+                const imageUrl = `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`;
+
+                axios.post(imageUrl, formData)
+                    .then(res => {
+                        // console.log(res.data.data.url);
+                        // ? update displayName + photourl.
+                        const updateInfo = {
+                            displayName: data.name,
+                            photoURL:res.data.data.url
+
+                        }
+                        updateUserInfo(updateInfo)
+                        .then(()=>{
+                            console.log('update successfully');
+                        })
+                        // console.log(updateInfo);
+
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            
 
             }).catch(() => {
                 setMessage({
@@ -91,43 +112,6 @@ const Registration = () => {
                     className="mt-8 space-y-5 w-full"
                     onSubmit={handleSubmit(handlerRegister)}
                 >
-                    {/* Avatar Upload */}
-                    <div className="flex items-center gap-4">
-                        <div className="relative shrink-0">
-                            <div className="w-16 h-16 rounded-full border border-base-300 flex items-center justify-center overflow-hidden">
-                                {avatarPreview ? (
-                                    <img
-                                        src={avatarPreview}
-                                        alt="Avatar Preview"
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <FaUser className="w-6 h-6 text-primary" />
-                                )}
-                            </div>
-
-                            <label
-                                htmlFor="photo"
-                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center cursor-pointer"
-                            >
-                                <FaCamera className="w-3 h-3" />
-                            </label>
-
-                            <input
-                                {...register("image")}
-                                id="photo"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handlePhotoChange}
-                            />
-                        </div>
-
-                        <div>
-                            <p className="text-sm font-medium">Profile photo</p>
-                            <p className="text-xs opacity-70">PNG or JPG, up to 5MB</p>
-                        </div>
-                    </div>
 
                     {/* Name */}
                     <div>
@@ -158,6 +142,29 @@ const Registration = () => {
                                 {errors.name.message}
                             </p>
                         )}
+                    </div>
+                    {/* Avatar Upload */}
+                    <div className="flex items-center gap-4">
+                        <div className="relative shrink-0">
+
+                            <label
+                                htmlFor="photo"
+                                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-content flex items-center justify-center cursor-pointer"
+                            >
+                                <FaCamera className="w-3 h-3" />
+                            </label>
+
+                            <input
+                                {...register("image")}
+                                id="photo"
+                                type="file"
+
+
+
+                            />
+                        </div>
+
+
                     </div>
 
                     {/* Email */}
