@@ -21,7 +21,7 @@ const pagesLinks = [
 
 const Nav = () => {
     //Todo currentUser.
-    const { user, loading, logOutUser } = useAuth()
+    const { user, logOutUser } = useAuth()
     console.log('currentUser', user);
 
     const [theme, setTheme] = useState(
@@ -79,10 +79,7 @@ const Nav = () => {
                 console.log('yes you logout');
             })
     }
-    //Todo loading...
-    if (loading) {
-        return <p>Loading...</p>
-    }
+  
     return (
         <>
 

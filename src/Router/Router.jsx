@@ -10,6 +10,8 @@ import CarsDetails from "../Pages/CarsDetails/CarsDetails";
 import LogIn from "../Auth/LogIn&Registation/LogIn";
 import Registation from "../Auth/LogIn&Registation/Registation";
 import AuthLayout from "../Layouts/AuthLayout";
+import PrivateRoutes from "./PrivateRoutes";
+
 
 const router = createBrowserRouter([
     {
@@ -20,7 +22,7 @@ const router = createBrowserRouter([
             { path: 'blog', element: <Blog></Blog> },
             { path: 'about', element: <About></About> },
             { path: 'contact', element: <Contact></Contact> },
-            { path: 'carsDetails/:id', element: <CarsDetails></CarsDetails> },
+            { path: 'carsDetails/:id', element: <PrivateRoutes><CarsDetails></CarsDetails></PrivateRoutes> },
         ]
     },
     //Todo Auth provider roter here.

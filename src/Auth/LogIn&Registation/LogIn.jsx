@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link } from 'react-router';
+import { Link} from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { FaCircleExclamation } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
-
 const LogIn = () => {
     const { logInUser, user, forgotPassword, loading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('')
+   
 
     //Todo handler LogIn user.
     const { register, handleSubmit, watch, setError, formState: { errors } } = useForm()
@@ -17,10 +17,11 @@ const LogIn = () => {
         // console.log('name', data.email);
         setSuccess('')
         logInUser(data.email, data.password)
-            .then((res) => {
+            .then(() => {
                 // console.log(res.user);
-
+               
                 setSuccess('Login done')
+                
 
             }).catch(() => {
                 setError('root', {
@@ -82,7 +83,7 @@ const LogIn = () => {
                     </h1>
                     <p className="font-body text-sm mt-2">
                         New here?{' '}
-                        <Link to={'/auth/registation'} className="text-primary font-medium hover:text-teal-800">
+                        <Link  to={'/auth/registation'} className="text-primary font-medium hover:text-teal-800">
                             Create an account
                         </Link>
                     </p>

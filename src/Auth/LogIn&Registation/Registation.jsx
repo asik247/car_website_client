@@ -2,7 +2,7 @@ import React, { use, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash, FaCamera } from 'react-icons/fa';
 import { FaCircleExclamation } from "react-icons/fa6";
-import { Link } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import Swal from 'sweetalert2';
 import axios from 'axios';
@@ -12,6 +12,8 @@ const Registration = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+   
+    // console.log(location);
     // Todo state here;
     const [message, setMessage] = useState({
         type: '',
@@ -46,8 +48,9 @@ const Registration = () => {
         const userImage = data.image[0]
         // console.log(userImage);
         registerUser(data.email, data.password)
-            .then((res) => {
-                console.log(res.user);
+            .then(() => {
+                // console.log(res.user);
+               
                 verifyEmail()
                 Swal.fire({
                     position: "top-end",
@@ -81,7 +84,7 @@ const Registration = () => {
                                 // console.log('update successfully');
                             })
                         // console.log(updateInfo);
-
+                        //! Implement userinfo post in db, users coll.
                     })
                     .catch(err => {
                         console.log(err);
