@@ -12,7 +12,8 @@ const Registration = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-   
+    const location = useLocation();
+    const navegate = useNavigate();
     // console.log(location);
     // Todo state here;
     const [message, setMessage] = useState({
@@ -50,7 +51,7 @@ const Registration = () => {
         registerUser(data.email, data.password)
             .then(() => {
                 // console.log(res.user);
-               
+                navegate(location.state || '/')
                 verifyEmail()
                 Swal.fire({
                     position: "top-end",
@@ -125,7 +126,7 @@ const Registration = () => {
                     </h2>
                     <p className="font-body text-sm mt-2 opacity-70">
                         Already have one?{' '}
-                        <Link to={'/auth'} className="text-primary font-bold hover:text-blue-800">
+                        <Link state={location.state} to={'/auth'} className="text-primary font-bold hover:text-blue-800">
                             Log in instead
                         </Link>
                     </p>

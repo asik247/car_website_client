@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link} from 'react-router';
+import { Link, useLocation, useNavigate} from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { FaCircleExclamation } from 'react-icons/fa6';
@@ -9,7 +9,8 @@ const LogIn = () => {
     const { logInUser, user, forgotPassword, loading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('')
-   
+    const location = useLocation();
+    const navegate = useNavigate();
 
     //Todo handler LogIn user.
     const { register, handleSubmit, watch, setError, formState: { errors } } = useForm()
@@ -19,7 +20,7 @@ const LogIn = () => {
         logInUser(data.email, data.password)
             .then(() => {
                 // console.log(res.user);
-               
+                navegate(location.state || '/')
                 setSuccess('Login done')
                 
 
@@ -83,7 +84,7 @@ const LogIn = () => {
                     </h1>
                     <p className="font-body text-sm mt-2">
                         New here?{' '}
-                        <Link  to={'/auth/registation'} className="text-primary font-medium hover:text-teal-800">
+                        <Link state={location.state} to={'/auth/registation'} className="text-primary font-medium hover:text-teal-800">
                             Create an account
                         </Link>
                     </p>
