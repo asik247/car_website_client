@@ -112,7 +112,7 @@ const Registration = () => {
             `}</style>
 
             <div className="w-full max-w-lg  rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/5 p-8 sm:p-10">
-                {/* Brand mark */}
+                {/* Brand markss */}
                 <div className="flex items-center justify-center gap-2 mb-8">
                     <div className="w-7 h-7 rounded-full bg-primary" />
                     <span className="font-mono text-xs tracking-widest uppercase">
