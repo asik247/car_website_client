@@ -1,22 +1,119 @@
-import { useQuery } from '@tanstack/react-query';
-import React from 'react';
-import { useParams } from 'react-router';
-import useInstance from '../../Hooks/useInstance';
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
+import { useParams } from "react-router";
+import useInstance from "../../Hooks/useInstance";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const CarsDetails = () => {
     const instance = useInstance();
-    const {id} = useParams();
-    const {data:cars=[]} = useQuery({
-        queryKey:['cars',id],
-        queryFn:async()=>{
-            const res = await instance.get(`/cars/details/${id}`)
-            return res.data
-        }
-    })
+    const { id } = useParams();
+
+    const { data: car = {}, isLoading } = useQuery({
+        queryKey: ["cars", id],
+        queryFn: async () => {
+            const res = await instance.get(`/cars/details/${id}`);
+            return res.data;
+        },
+    });
+
+    if (isLoading) {
+        return <span className="loading loading-spinner loading-lg"></span>;
+    }
+
     return (
-        <div>
-            <h1>Cars Details page {cars.price}</h1>
-            <img src={cars.image} alt="" />
+        <div className="max-w-7xl mx-auto p-4">
+            {/* Name + Price */}
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">{car.carName}</h1>
+
+                <h2 className="text-2xl font-semibold text-primary">
+                    ${car.price}
+                </h2>
+            </div>
+
+            {/* Car Image Slider */}
+            <Swiper
+                modules={[Pagination, Navigation, Autoplay]}
+                pagination={{ clickable: true }}
+                navigation
+                loop
+                autoplay={{
+                    delay: 3000,
+                    disableOnInteraction: false,
+                }}
+            >
+
+                {
+                    car.imageGallery.map((img, index) => <SwiperSlide key={index}>
+                        <img
+                            className="w-full h-[500px] object-cover rounded-xl"
+                            src={img}
+                            alt={''}
+                        />
+                    </SwiperSlide>)
+                }
+            </Swiper>
+            <div className="flex justify-between items-center">
+                {/* car details left side */}
+                <div>
+                    <section>
+                        <h2>Description</h2>
+                        <p>{car.description}</p>
+                    </section>
+                    {/* car info section */}
+                    <section>
+                        <h2>Car Information</h2>
+                        {
+                            car.features.map((feature, ind) => <li key={ind}>{feature}</li>)
+                        }
+                    </section>
+                    {/* image gallery */}
+                    <section>
+                        {
+                            car.imageGallery.map((img, index) => <SwiperSlide key={index}>
+                                <img
+                                    className="w-full h-[500px] object-cover rounded-xl"
+                                    src={img}
+                                    alt={''}
+                                />
+                            </SwiperSlide>)
+                        }
+                    </section>
+                    <section>
+                        <article>
+                            <h3>No prepaypayment required</h3>
+                            <p>Just provide us your Social Security Number and It’s all done</p>
+                        </article>
+                        <article>
+                            <h3>High quality cars</h3>
+                            <p>Our cars ‘re certificated by gurus who has 20+ experience years</p>
+                        </article>
+                        <article>
+                            <h3>Trusted by 10+ clients</h3>
+                            <p>We have 10k+ happy clients who love us and ready for our cars</p>
+                        </article>
+                        <article>
+                            <h3>Free cancelation</h3>
+                            <p>No extra fee, you can cancel your booking anytime</p>
+                        </article>
+                    </section>
+                </div>
+                {/* check car and leatest car here right side */}
+                <div>
+                    <section>
+                        check car ar taka card desing thabe pick up , drup of and quentity and totla price last a check car btn thkebe.
+                    </section>
+                    <section>
+                        <img src={car.image} alt="" />
+                    </section>
+                </div>
+            </div>
         </div>
     );
 };
