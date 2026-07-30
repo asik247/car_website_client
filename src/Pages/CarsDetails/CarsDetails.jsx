@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import useInstance from "../../Hooks/useInstance";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -23,95 +23,311 @@ const CarsDetails = () => {
     });
 
     if (isLoading) {
-        return <span className="loading loading-spinner loading-lg"></span>;
+        return (
+            <div className="min-h-screen flex justify-center items-center">
+                <span className="loading loading-spinner loading-lg"></span>
+            </div>
+        );
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
-            {/* Name + Price */}
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">{car.carName}</h1>
+        <div className="max-w-7xl mx-auto px-4 py-10">
 
-                <h2 className="text-2xl font-semibold text-primary">
-                    ${car.price}
-                </h2>
+            {/* Custom Swiper Style */}
+            <style>
+                {`
+                .car-slider .swiper-button-prev,
+                .car-slider .swiper-button-next{
+                    color:white;
+                    opacity:0;
+                    transition:.3s;
+                    background:rgba(0,0,0,.35);
+                    width:50px;
+                    height:50px;
+                    border-radius:999px;
+                }
+
+                .car-slider:hover .swiper-button-prev,
+                .car-slider:hover .swiper-button-next{
+                    opacity:1;
+                }
+
+                .car-slider .swiper-pagination-bullet{
+                    background:white;
+                    opacity:.7;
+                }
+
+                .car-slider .swiper-pagination-bullet-active{
+                    background:white;
+                    width:24px;
+                    border-radius:999px;
+                }
+                `}
+            </style>
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                    <h1 className="text-4xl font-bold">
+                        {car.carName}
+                    </h1>
+
+                    <p className="text-base-content/60 mt-2">
+                        Premium Luxury Vehicle
+                    </p>
+                </div>
+
+                <div>
+                    <h2 className="text-4xl font-bold text-primary">
+                        ${car.price}
+                    </h2>
+
+                    <p className="text-base-content/60">
+                        Per Day
+                    </p>
+                </div>
             </div>
 
-            {/* Car Image Slider */}
-            <Swiper
-                modules={[Pagination, Navigation, Autoplay]}
-                pagination={{ clickable: true }}
-                navigation
-                loop
-                autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                }}
-            >
-
-                {
-                    car.imageGallery.map((img, index) => <SwiperSlide key={index}>
-                        <img
-                            className="w-full h-[500px] object-cover rounded-xl"
-                            src={img}
-                            alt={''}
-                        />
-                    </SwiperSlide>)
-                }
-            </Swiper>
-            <div className="flex justify-between items-center">
-                {/* car details left side */}
-                <div>
-                    <section>
-                        <h2>Description</h2>
-                        <p>{car.description}</p>
-                    </section>
-                    {/* car info section */}
-                    <section>
-                        <h2>Car Information</h2>
-                        {
-                            car.features.map((feature, ind) => <li key={ind}>{feature}</li>)
-                        }
-                    </section>
-                    {/* image gallery */}
-                    <section>
-                        {
-                            car.imageGallery.map((img, index) => <SwiperSlide key={index}>
+            {/* Hero Slider */}
+            <div className="car-slider mb-12">
+                <Swiper
+                    modules={[Pagination, Navigation, Autoplay]}
+                    pagination={{ clickable: true }}
+                    navigation
+                    loop
+                    autoplay={{
+                        delay: 3000,
+                        disableOnInteraction: false,
+                    }}
+                >
+                    {car.imageGallery?.length > 0 ? (
+                        car.imageGallery.map((img, index) => (
+                            <SwiperSlide key={index}>
                                 <img
-                                    className="w-full h-[500px] object-cover rounded-xl"
                                     src={img}
-                                    alt={''}
+                                    alt=""
+                                    className="w-full h-[550px] object-cover rounded-3xl"
                                 />
-                            </SwiperSlide>)
-                        }
+                            </SwiperSlide>
+                        ))
+                    ) : (
+                        <SwiperSlide>
+                            <img
+                                src={car.image}
+                                alt=""
+                                className="w-full h-[550px] object-cover rounded-3xl"
+                            />
+                        </SwiperSlide>
+                    )}
+                </Swiper>
+            </div>
+
+            {/* Main Layout */}
+            <div className="grid lg:grid-cols-3 gap-8">
+
+                {/* LEFT CONTENT */}
+                <div className="lg:col-span-2 space-y-8">
+
+                    {/* Description */}
+                    <section className="bg-base-200 rounded-3xl p-8">
+                        <h2 className="text-3xl font-bold mb-5">
+                            Description
+                        </h2>
+
+                        <p className="leading-8 text-base-content/70">
+                            {car.description}
+                        </p>
                     </section>
+
+                    {/* Features */}
+                    <section className="bg-base-200 rounded-3xl p-8">
+                        <h2 className="text-3xl font-bold mb-5">
+                            Features
+                        </h2>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {car.features?.map((feature, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-base-100 border border-base-300 rounded-2xl p-4 shadow-sm"
+                                >
+                                    ✅ {feature}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Benefits */}
+                    <section className="bg-base-200 rounded-3xl p-8">
+                        <h2 className="text-3xl font-bold mb-5">
+                            Why Choose Us
+                        </h2>
+
+                        <div className="grid md:grid-cols-2 gap-5">
+
+                            <article className="bg-base-100 p-5 rounded-2xl">
+                                <h3 className="font-bold text-lg">
+                                    No Prepayment Required
+                                </h3>
+
+                                <p className="mt-2 text-base-content/70">
+                                    Reserve your vehicle without paying upfront.
+                                </p>
+                            </article>
+
+                            <article className="bg-base-100 p-5 rounded-2xl">
+                                <h3 className="font-bold text-lg">
+                                    High Quality Cars
+                                </h3>
+
+                                <p className="mt-2 text-base-content/70">
+                                    All vehicles are inspected and certified.
+                                </p>
+                            </article>
+
+                            <article className="bg-base-100 p-5 rounded-2xl">
+                                <h3 className="font-bold text-lg">
+                                    Trusted By Clients
+                                </h3>
+
+                                <p className="mt-2 text-base-content/70">
+                                    Thousands of happy customers trust us.
+                                </p>
+                            </article>
+
+                            <article className="bg-base-100 p-5 rounded-2xl">
+                                <h3 className="font-bold text-lg">
+                                    Free Cancellation
+                                </h3>
+
+                                <p className="mt-2 text-base-content/70">
+                                    Cancel anytime without hidden fees.
+                                </p>
+                            </article>
+
+                        </div>
+                    </section>
+
+                    {/* Gallery */}
                     <section>
-                        <article>
-                            <h3>No prepaypayment required</h3>
-                            <p>Just provide us your Social Security Number and It’s all done</p>
-                        </article>
-                        <article>
-                            <h3>High quality cars</h3>
-                            <p>Our cars ‘re certificated by gurus who has 20+ experience years</p>
-                        </article>
-                        <article>
-                            <h3>Trusted by 10+ clients</h3>
-                            <p>We have 10k+ happy clients who love us and ready for our cars</p>
-                        </article>
-                        <article>
-                            <h3>Free cancelation</h3>
-                            <p>No extra fee, you can cancel your booking anytime</p>
-                        </article>
+                        <h2 className="text-3xl font-bold mb-5">
+                            Gallery
+                        </h2>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {car.imageGallery?.map((img, index) => (
+                                <img
+                                    key={index}
+                                    src={img}
+                                    alt=""
+                                    className="rounded-2xl h-52 w-full object-cover hover:scale-105 duration-300 cursor-pointer"
+                                />
+                            ))}
+                        </div>
                     </section>
                 </div>
-                {/* check car and leatest car here right side */}
+
+                {/* RIGHT SIDEBAR */}
                 <div>
-                    <section>
-                        check car ar taka card desing thabe pick up , drup of and quentity and totla price last a check car btn thkebe.
-                    </section>
-                    <section>
-                        <img src={car.image} alt="" />
-                    </section>
+
+                    <div className="sticky top-24 space-y-6">
+
+                        {/* Booking Card */}
+                        <div className="bg-base-200 rounded-3xl p-6 shadow-xl">
+
+                            <h2 className="text-3xl font-bold">
+                                ${car.price}
+                            </h2>
+
+                            <p className="text-base-content/60 mb-6">
+                                Daily Rental Price
+                            </p>
+
+                            <div className="space-y-4">
+
+                                <div>
+                                    <label className="font-medium">
+                                        Pick Up Date
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        className="input input-bordered w-full mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="font-medium">
+                                        Drop Off Date
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        className="input input-bordered w-full mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="font-medium">
+                                        Quantity
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        defaultValue="1"
+                                        className="input input-bordered w-full mt-2"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="divider"></div>
+
+                            <div className="flex justify-between text-lg">
+                                <span>Total Price</span>
+
+                                <span className="font-bold text-primary">
+                                    ${car.price}
+                                </span>
+                            </div>
+
+                            <button className="btn btn-primary w-full mt-6 rounded-xl">
+                                Check Availability
+                            </button>
+                        </div>
+
+                        {/* Car Card */}
+                        <div className="card bg-base-200 shadow-xl">
+
+                            <figure>
+                                <img
+                                    src={car.image}
+                                    alt=""
+                                    className="h-60 w-full object-cover"
+                                />
+                            </figure>
+
+                            <div className="card-body">
+
+                                <h2 className="card-title">
+                                    {car.carName}
+                                </h2>
+
+                                <p>
+                                    Premium luxury vehicle ready for your next adventure.
+                                </p>
+
+                                <div className="card-actions justify-end">
+                                    <button className="btn btn-primary">
+                                        Rent Now
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -119,6 +335,8 @@ const CarsDetails = () => {
 };
 
 export default CarsDetails;
+
+
 /**{
     "_id": "7cb2c083eb8cb37f0a72e9d3",
     "carName": "Ferrari 250 GTO",
