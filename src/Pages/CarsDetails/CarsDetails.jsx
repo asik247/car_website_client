@@ -86,6 +86,7 @@ const CarsDetails = () => {
     };
 
     const handleAddToCart = () => {
+        //Todo cart Data send db.
         const cartData = {
             carId: car._id,
             carName: car.carName,
@@ -97,6 +98,7 @@ const CarsDetails = () => {
             totalPrice,
             addedAt: new Date().toISOString(),
         };
+        console.log('Add To Cart Details',cartData);
 
         // Persisted locally for now — swap for a POST to /cart once the
         // backend endpoint is ready (see commented example below).
