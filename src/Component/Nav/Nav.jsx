@@ -22,7 +22,7 @@ const pagesLinks = [
 const Nav = () => {
     //Todo currentUser.
     const { user, logOutUser } = useAuth()
-    console.log('currentUser', user);
+    // console.log('currentUser', user);
 
     const [theme, setTheme] = useState(
         localStorage.getItem("theme") || "light"

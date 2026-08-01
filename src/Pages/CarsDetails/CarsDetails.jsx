@@ -2,27 +2,23 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import useInstance from "../../Hooks/useInstance";
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import Swal from "sweetalert2";
-
-const CART_KEY = "carRentalCart";
 
 const CarsDetails = () => {
     const instance = useInstance();
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [quantity, setQuantity] = useState(1);
-    const [showAddToCart, setShowAddToCart] = useState(false);
+    //! ---- Local UI state
+    const [quantity, setQuantity] = useState(1); 
+    const [showAddToCart, setShowAddToCart] = useState(false); 
     const [pickupDate, setPickupDate] = useState("");
     const [dropoffDate, setDropoffDate] = useState("");
+ //? controls the cart preview modal
+    const [activeImage, setActiveImage] = useState(0); 
+    const [activeTab, setActiveTab] = useState("overview"); 
 
+    //Todo ---- Fetch the car being viewed 
     const { data: car = {}, isLoading } = useQuery({
         queryKey: ["cars", id],
         queryFn: async () => {
@@ -31,10 +27,15 @@ const CarsDetails = () => {
         },
     });
 
+
+    //? ---- Derived values 
     const dailyRate = car.price || 0;
     const totalPrice = dailyRate * quantity;
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0]; // used as the min date for the date pickers
+    const gallery = car.imageGallery?.length > 0 ? car.imageGallery : [car.image].filter(Boolean);
+    const mainImage = gallery[activeImage] || car.image;
 
+    //Todo Loading state 
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center bg-[#F6F3ED]">
@@ -42,7 +43,7 @@ const CarsDetails = () => {
             </div>
         );
     }
-
+    //? Checked Availability..
     const handleCheckAvailability = () => {
         if (!pickupDate || !dropoffDate) {
             Swal.fire({
@@ -85,8 +86,8 @@ const CarsDetails = () => {
         });
     };
 
+    /** Add To Cart */
     const handleAddToCart = () => {
-        //Todo cart Data send db.
         const cartData = {
             carId: car._id,
             carName: car.carName,
@@ -98,348 +99,260 @@ const CarsDetails = () => {
             totalPrice,
             addedAt: new Date().toISOString(),
         };
-        console.log('Add To Cart Details',cartData);
 
-        // Persisted locally for now — swap for a POST to /cart once the
-        // backend endpoint is ready (see commented example below).
-        const existingCart = JSON.parse(localStorage.getItem(CART_KEY)) || [];
-        existingCart.push(cartData);
-        localStorage.setItem(CART_KEY, JSON.stringify(existingCart));
-
-        // instance.post("/cart", cartData).then(res => console.log(res.data));
-
-        Swal.fire({
-            icon: "success",
-            title: "Added to cart",
-            text: `${car.carName} is waiting for you in the cart.`,
-            confirmButtonText: "View Cart",
-            showCancelButton: true,
-            cancelButtonText: "Keep Browsing",
-            confirmButtonColor: "#C9A15B",
-            cancelButtonColor: "#23262B",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                navigate("/cart");
-            }
-        });
+        instance
+            .post("/addToCartsData", cartData)
+            .then((res) => {
+                console.log(res.data);
+                Swal.fire({
+                    icon: "success",
+                    title: "Added to cart",
+                    text: `${car.carName} has been added to your cart.`,
+                    timer: 1400,
+                    showConfirmButton: false,
+                });
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
     };
 
+    const TABS = [
+        { key: "overview", label: "Overview" },
+        { key: "features", label: "Features" },
+        { key: "why", label: "Why Us" },
+    ];
+
     return (
-        <div className=" min-h-screen">
+        
+        <div className="min-h-screen font-['Manrope',sans-serif]">
             <style>
-                {`
-                @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
-
-                .cd-root, .cd-root * { font-family: 'Manrope', sans-serif; }
-                .cd-display { font-family: 'Fraunces', serif; }
-                .cd-mono { font-family: 'Space Mono', monospace; }
-
-                .cd-eyebrow{
-                    letter-spacing:.22em;
-                    text-transform:uppercase;
-                    font-size:.72rem;
-                    font-weight:700;
-                }
-
-                .cd-hairline{
-                    height:1px;
-                    background:linear-gradient(90deg, rgba(201,161,91,.7), rgba(201,161,91,0));
-                }
-
-                /* Hero slider */
-                .car-slider .swiper-button-prev,
-                .car-slider .swiper-button-next{
-                    color:#F6F3ED;
-                    opacity:0;
-                    transition:.3s;
-                    background:rgba(20,22,26,.45);
-                    width:46px;
-                    height:46px;
-                    border-radius:999px;
-                }
-                .car-slider .swiper-button-prev:after,
-                .car-slider .swiper-button-next:after{ font-size:16px; }
-                .car-slider:hover .swiper-button-prev,
-                .car-slider:hover .swiper-button-next{ opacity:1; }
-                .car-slider .swiper-pagination-bullet{ background:#F6F3ED; opacity:.6; }
-                .car-slider .swiper-pagination-bullet-active{ background:#C9A15B; width:22px; border-radius:999px; opacity:1; }
-
-                /* Trip computer panel */
-                .trip-computer{
-                    background:#14161A;
-                    border-radius:28px;
-                    position:relative;
-                    overflow:hidden;
-                }
-                .trip-computer:before{
-                    content:"";
-                    position:absolute;
-                    inset:0;
-                    background:radial-gradient(circle at 15% 0%, rgba(201,161,91,.16), transparent 55%);
-                    pointer-events:none;
-                }
-                .trip-readout{
-                    text-shadow:0 0 18px rgba(201,161,91,.55);
-                    letter-spacing:.03em;
-                    font-variant-numeric: tabular-nums;
-                }
-                .trip-field label{
-                    color:#8A8F98;
-                    letter-spacing:.14em;
-                    text-transform:uppercase;
-                    font-size:.65rem;
-                    font-weight:700;
-                }
-                .trip-field input{
-                    background:transparent;
-                    border:none;
-                    border-bottom:1px solid rgba(255,255,255,.14);
-                    color:#F6F3ED;
-                    padding:8px 2px;
-                    width:100%;
-                    outline:none;
-                    font-weight:600;
-                    transition:.2s;
-                }
-                .trip-field input:focus{ border-bottom-color:#C9A15B; }
-                .trip-field input::-webkit-calendar-picker-indicator{ filter:invert(1); opacity:.7; cursor:pointer; }
-
-                .status-dot{
-                    width:8px; height:8px; border-radius:999px;
-                    background:#5C6068;
-                }
-                .status-dot.live{
-                    background:#6FA287;
-                    box-shadow:0 0 0 0 rgba(111,162,135,.6);
-                    animation:pulse 1.8s infinite;
-                }
-                @keyframes pulse{
-                    0%{ box-shadow:0 0 0 0 rgba(111,162,135,.55); }
-                    70%{ box-shadow:0 0 0 8px rgba(111,162,135,0); }
-                    100%{ box-shadow:0 0 0 0 rgba(111,162,135,0); }
-                }
-
-                .cd-btn-primary{
-                    background:#C9A15B;
-                    color:#14161A;
-                    font-weight:700;
-                    border-radius:14px;
-                    transition:.2s;
-                }
-                .cd-btn-primary:hover{ background:#DCB876; }
-
-                .cd-btn-ghost{
-                    background:transparent;
-                    border:1px solid rgba(255,255,255,.18);
-                    color:#F6F3ED;
-                    font-weight:700;
-                    border-radius:14px;
-                    transition:.2s;
-                }
-                .cd-btn-ghost:hover{ border-color:#C9A15B; color:#C9A15B; }
-
-                .feature-chip{
-                    display:flex; align-items:center; gap:12px;
-                    background:#FFFFFF;
-                    border:1px solid #E9E3D6;
-                    border-radius:16px;
-                    padding:14px 16px;
-                }
-                .feature-check{
-                    flex-shrink:0;
-                    width:26px; height:26px;
-                    border-radius:999px;
-                    background:#F1E4C8;
-                    color:#8A6B23;
-                    display:flex; align-items:center; justify-content:center;
-                }
-
-                .gallery-tile{ position:relative; overflow:hidden; border-radius:18px; }
-                .gallery-tile img{ transition:transform .5s ease; }
-                .gallery-tile:hover img{ transform:scale(1.08); }
-                .gallery-tile:after{
-                    content:"";
-                    position:absolute; inset:0;
-                    background:linear-gradient(180deg, transparent 55%, rgba(20,22,26,.55));
-                    opacity:0; transition:.3s;
-                }
-                .gallery-tile:hover:after{ opacity:1; }
-                `}
+                {`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');`}
             </style>
 
-            <div className="cd-root max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
-
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
-                    <div>
-                        <p className="cd-eyebrow  mb-3">Premium Rental &middot; Verified Fleet</p>
-                        <h1 className="cd-display text-4xl md:text-5xl font-semibold  leading-tight">
-                            {car.carName}
-                        </h1>
-                    </div>
-
-                    <div className="flex items-center gap-3  rounded-2xl px-5 py-3">
-                        <div className="text-right">
-                            <p className="cd-mono text-2xl  trip-readout">
-                                ৳{dailyRate.toLocaleString()}
-                            </p>
-                            <p className="cd-eyebrow text-[#8A8F98] mt-0.5">Per Day</p>
-                        </div>
-                    </div>
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 pb-28">
+                {/*BREADCRUMB  */}
+                <div className="flex items-center gap-2 text-[0.78rem]  mb-6">
+                    <button onClick={() => navigate("/")} className="hover:text-[#8A6B23] transition-colors">
+                        Home
+                    </button>
+                    <span>/</span>
+                    <button onClick={() => navigate(-1)} className="hover:text-[#8A6B23] transition-colors">
+                        Cars
+                    </button>
+                    <span>/</span>
+                    <span className=" font-medium truncate max-w-[200px]">{car.carName}</span>
                 </div>
 
-                {/* Hero Slider */}
-                <div className="car-slider mb-12">
-                    <Swiper
-                        modules={[Pagination, Navigation, Autoplay]}
-                        pagination={{ clickable: true }}
-                        navigation
-                        loop
-                        autoplay={{
-                            delay: 3000,
-                            disableOnInteraction: false,
-                        }}
-                    >
-                        {car.imageGallery?.length > 0 ? (
-                            car.imageGallery.map((img, index) => (
-                                <SwiperSlide key={index}>
-                                    <img
-                                        src={img}
-                                        alt={car.carName}
-                                        className="w-full h-[420px] md:h-[550px] object-cover rounded-3xl"
-                                    />
-                                </SwiperSlide>
-                            ))
-                        ) : (
-                            <SwiperSlide>
-                                <img
-                                    src={car.image}
-                                    alt={car.carName}
-                                    className="w-full h-[420px] md:h-[550px] object-cover rounded-3xl"
-                                />
-                            </SwiperSlide>
-                        )}
-                    </Swiper>
-                </div>
+                
+                <div className="grid md:grid-cols-[88px_1fr] gap-4 mb-10">
+                    {/* Thumbnail rail */}
+                    <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
+                        {gallery.map((img, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setActiveImage(index)}
+                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${
+                                    activeImage === index ? "border-[#C9A15B]" : "border-transparent"
+                                }`}
+                            >
+                                <img src={img} alt={`${car.carName} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                        ))}
+                    </div>
 
-                {/* Main Layout */}
+                    {/* Main image */}
+                    <div className="order-1 md:order-2 group relative overflow-hidden rounded-3xl border border-[#E9E3D6]">
+                        <img
+                            src={mainImage}
+                            alt={car.carName}
+                            className="w-full h-[340px] md:h-[520px] object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        />
+                        <span className="absolute top-4 left-4 uppercase tracking-[0.18em] text-[0.65rem] font-bold   rounded-full px-3 py-1.5">
+                            Verified Fleet
+                        </span>
+                    </div>
+                </div>
+                {/* Lef + Right Parent */}
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
-
-                    {/* LEFT CONTENT */}
+                   {/* Left side */}
                     <div className="lg:col-span-2 space-y-6">
 
-                        {/* Description */}
-                        <section className="bg-white rounded-3xl p-7 md:p-8 border border-[#E9E3D6]">
-                            <p className="cd-eyebrow text-[#8A6B23] mb-2">Overview</p>
-                            <h2 className="cd-display text-2xl md:text-3xl font-semibold text-[#14161A] mb-4">
-                                About This Vehicle
-                            </h2>
-                            <p className="leading-8 text-[#4A4E57]">
-                                {car.description}
+                        <div>
+                            <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold text-[#8A6B23] mb-2">
+                                Premium Rental
                             </p>
-                        </section>
+                            <h1 className="font-['Fraunces',serif] text-3xl md:text-4xl font-semibold leading-tight ">
+                                {car.carName}
+                            </h1>
+                        </div>
 
-                        {/* Features */}
-                        {car.features?.length > 0 && (
-                            <section className="bg-white rounded-3xl p-7 md:p-8 border border-[#E9E3D6]">
-                                <p className="cd-eyebrow text-[#8A6B23] mb-2">Included</p>
-                                <h2 className="cd-display text-2xl md:text-3xl font-semibold text-[#14161A] mb-5">
-                                    Features
-                                </h2>
+                        {/* Tab bar */}
+                        <div className="border-b border-[#E9E3D6] flex gap-6">
+                            {TABS.map((tab) => (
+                                <button
+                                    key={tab.key}
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${
+                                        activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
+                                    }`}
+                                >
+                                    {tab.label}
+                                    {activeTab === tab.key && (
+                                        <span className="absolute left-0 right-0 -bottom-px h-[2px]  rounded-full" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
 
-                                <div className="grid md:grid-cols-2 gap-3">
-                                    {car.features.map((feature, index) => (
-                                        <div key={index} className="feature-chip">
-                                            <span className="feature-check">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            </span>
-                                            <span className="text-[#23262B] font-medium">{feature}</span>
-                                        </div>
-                                    ))}
+                        {/* Tab panels */}
+                        <div className=" rounded-3xl p-7 md:p-8 border border-[#E9E3D6]">
+                            {activeTab === "overview" && (
+                                <div>
+                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-4">
+                                        About This Vehicle
+                                    </h2>
+                                    <p className="leading-8 ">{car.description}</p>
                                 </div>
-                            </section>
-                        )}
+                            )}
 
-                        {/* Benefits */}
-                        <section className="bg-[#14161A] rounded-3xl p-7 md:p-8">
-                            <p className="cd-eyebrow text-[#C9A15B] mb-2">Our Promise</p>
-                            <h2 className="cd-display text-2xl md:text-3xl font-semibold text-white mb-6">
-                                Why Rent With Us
-                            </h2>
+                            {activeTab === "features" && (
+                                <div>
+                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold text-[#14161A] mb-5">
+                                        What's Included
+                                    </h2>
+                                    {car.features?.length > 0 ? (
+                                        <div className="grid md:grid-cols-2 gap-3">
+                                            {car.features.map((feature, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center gap-3  border border-[#E9E3D6] rounded-2xl px-4 py-3.5"
+                                                >
+                                                    <span className="flex-shrink-0 w-[26px] h-[26px] rounded-full   flex items-center justify-center">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                                            <path
+                                                                d="M20 6L9 17l-5-5"
+                                                                stroke="currentColor"
+                                                                strokeWidth="3"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                        </svg>
+                                                    </span>
+                                                    <span className=" font-medium">{feature}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className=" text-sm">No feature list provided for this vehicle.</p>
+                                    )}
+                                </div>
+                            )}
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {[
-                                    { title: "No Prepayment Required", body: "Reserve your vehicle without paying upfront." },
-                                    { title: "High Quality Cars", body: "Every vehicle is inspected and certified before pickup." },
-                                    { title: "Trusted By Clients", body: "Thousands of happy customers rent with us every month." },
-                                    { title: "Free Cancellation", body: "Cancel anytime, no hidden fees, no questions asked." },
-                                ].map((item, i) => (
-                                    <article key={i} className="border border-white/10 rounded-2xl p-5">
-                                        <h3 className="font-semibold text-white text-lg">{item.title}</h3>
-                                        <p className="mt-2 text-[#9CA0A8] text-sm leading-6">{item.body}</p>
-                                    </article>
-                                ))}
-                            </div>
-                        </section>
+                            {activeTab === "why" && (
+                                <div>
+                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">
+                                        Why Rent With Us
+                                    </h2>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        {[
+                                            { title: "No Prepayment Required", body: "Reserve your vehicle without paying upfront." },
+                                            { title: "High Quality Cars", body: "Every vehicle is inspected and certified before pickup." },
+                                            { title: "Trusted By Clients", body: "Thousands of happy customers rent with us every month." },
+                                            { title: "Free Cancellation", body: "Cancel anytime, no hidden fees, no questions asked." },
+                                        ].map((item, i) => (
+                                            <article key={i} className="border border-[#E9E3D6] rounded-2xl p-5">
+                                                <h3 className="font-semibold ">{item.title}</h3>
+                                                <p className="mt-2  text-sm leading-6">{item.body}</p>
+                                            </article>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-                        {/* Gallery */}
-                        {car.imageGallery?.length > 0 && (
+                       
+                        {gallery.length > 1 && (
                             <section>
-                                <p className="cd-eyebrow text-[#8A6B23] mb-2">Gallery</p>
-                                <h2 className="cd-display text-2xl md:text-3xl font-semibold text-[#14161A] mb-5">
+                                <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold  mb-2">
+                                    Gallery
+                                </p>
+                                <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">
                                     More Views
                                 </h2>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {car.imageGallery.map((img, index) => (
-                                        <div key={index} className="gallery-tile">
+                                    {gallery.map((img, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => {
+                                                setActiveImage(index);
+                                                window.scrollTo({ top: 0, behavior: "smooth" });
+                                            }}
+                                            className="group relative overflow-hidden rounded-2xl text-left"
+                                        >
                                             <img
                                                 src={img}
                                                 alt={`${car.carName} ${index + 1}`}
-                                                className="h-52 w-full object-cover cursor-pointer"
+                                                className="h-52 w-full object-cover cursor-pointer transition-transform duration-500 ease-out group-hover:scale-110"
                                             />
-                                        </div>
+                                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-[#14161A]/55 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                        </button>
                                     ))}
                                 </div>
                             </section>
                         )}
                     </div>
 
-                    {/* RIGHT — sticky column */}
-                    <div className="sticky top-24 space-y-6">
+                   {/* Right Side */}
+                    <div className="lg:sticky lg:top-24 space-y-4">
 
-                        {/* Trip Computer / Booking Panel */}
-                        <div className="trip-computer p-7">
-                            <div className="relative flex items-center justify-between mb-1">
-                                <p className="cd-eyebrow text-[#8A8F98]">Trip Computer</p>
-                                <span className={`status-dot ${showAddToCart ? "live" : ""}`}></span>
+                        {/* Buy box */}
+                        <div className="rounded-3xl border border-[#E9E3D6] p-7">
+                            <div className="flex items-end justify-between mb-1">
+                                <p className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">
+                                    Per Day
+                                </p>
+                                <span className="relative flex h-2 w-2">
+                                    {showAddToCart && (
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full  opacity-75" />
+                                    )}
+                                    <span
+                                        className={`relative inline-flex h-2 w-2 rounded-full ${
+                                            showAddToCart ? "" : ""
+                                        }`}
+                                    />
+                                </span>
                             </div>
-
-                            <p className="cd-mono trip-readout text-4xl text-[#C9A15B] font-bold relative">
-                                ৳{totalPrice.toLocaleString()}
+                            <p className="font-['Space_Mono',monospace] text-3xl font-bold tracking-[0.02em]  [font-variant-numeric:tabular-nums]">
+                                ৳{dailyRate.toLocaleString()}
                             </p>
-                            <p className="cd-eyebrow text-[#8A8F98] mb-6 relative">Estimated Total</p>
 
-                            <div className="cd-hairline mb-6"></div>
+                            <div className="h-px  my-5" />
 
-                            <div className="space-y-5 relative">
-                                <div className="trip-field">
-                                    <label>Pick Up</label>
+                            <div className="space-y-4">
+                                {/* Pick-up date */}
+                                <div>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
+                                        Pick Up
+                                    </label>
                                     <input
                                         type="date"
                                         min={today}
                                         value={pickupDate}
                                         onChange={(e) => {
                                             setPickupDate(e.target.value);
-                                            setShowAddToCart(false);
+                                            setShowAddToCart(false); // any date change invalidates the previous availability check
                                         }}
+                                        className="w-full border border-[#E9E3D6] rounded-xl px-3 py-2.5 outline-none font-semibold transition-colors duration-200 focus:border-[#C9A15B]"
                                     />
                                 </div>
 
-                                <div className="trip-field">
-                                    <label>Drop Off</label>
+                                {/* Drop-off date */}
+                                <div>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
+                                        Drop Off
+                                    </label>
                                     <input
                                         type="date"
                                         min={pickupDate || today}
@@ -448,136 +361,102 @@ const CarsDetails = () => {
                                             setDropoffDate(e.target.value);
                                             setShowAddToCart(false);
                                         }}
+                                        className="w-full  border border-[#E9E3D6] rounded-xl  px-3 py-2.5 outline-none font-semibold transition-colors duration-200 focus:border-[#C9A15B]"
                                     />
                                 </div>
 
-                                <div className="trip-field">
-                                    <label>Quantity</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={quantity}
-                                        onChange={(e) => {
-                                            setQuantity(Math.max(1, Number(e.target.value)));
-                                            setShowAddToCart(false);
-                                        }}
-                                    />
+                                {/* Quantity stepper */}
+                                <div>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
+                                        Quantity
+                                    </label>
+                                    <div className="flex items-center border border-[#E9E3D6] rounded-xl overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setQuantity((q) => Math.max(1, q - 1));
+                                                setShowAddToCart(false);
+                                            }}
+                                            className="w-10 h-11 flex items-center justify-center  font-bold hover:bg-[#EFE8D6] transition-colors"
+                                        >
+                                            −
+                                        </button>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={quantity}
+                                            onChange={(e) => {
+                                                setQuantity(Math.max(1, Number(e.target.value)));
+                                                setShowAddToCart(false);
+                                            }}
+                                            className="flex-1 bg-transparent text-center outline-none font-semibold "
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setQuantity((q) => q + 1);
+                                                setShowAddToCart(false);
+                                            }}
+                                            className="w-10 h-11 flex items-center justify-center  font-bold hover:bg-[#EFE8D6] transition-colors"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="cd-hairline my-6"></div>
+                            <div className="h-px  my-5" />
 
-                            <div className="relative space-y-3">
-                                {!showAddToCart ? (
-                                    <button
-                                        onClick={handleCheckAvailability}
-                                        className="cd-btn-primary w-full py-3.5"
-                                    >
-                                        Check Availability
-                                    </button>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={handleAddToCart}
-                                            className="cd-btn-primary w-full py-3.5"
-                                        >
-                                            Add To Cart
-                                        </button>
-                                        <button
-                                            onClick={() => setShowAddToCart(false)}
-                                            className="cd-btn-ghost w-full py-3"
-                                        >
-                                            Edit Dates
-                                        </button>
-                                    </>
-                                )}
+                            <div className="flex items-baseline justify-between mb-5">
+                                <span className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">
+                                    Estimated Total
+                                </span>
+                                <span className="font-['Space_Mono',monospace] text-xl font-bold ">
+                                    ৳{totalPrice.toLocaleString()}
+                                </span>
                             </div>
+
+                            {/* Primary CTA — swaps label/behaviour once availability is confirmed */}
+                            {!showAddToCart ? (
+                                <button
+                                    onClick={handleCheckAvailability}
+                                    className="w-full py-3.5 rounded-2xl font-bold  transition-colors duration-200 bg-primary"
+                                >
+                                    Check Availability
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="w-full py-3.5 rounded-2xl  font-bold t transition-colors duration-200 bg-primary"
+                                >
+                                    Add To Cart
+                                </button>
+                            )}
                         </div>
 
-                        {/* Car Summary Card */}
-                        <div className="bg-white rounded-3xl overflow-hidden border border-[#E9E3D6]">
-                            <img
-                                src={car.image}
-                                alt={car.carName}
-                                className="h-52 w-full object-cover"
-                            />
-                            <div className="p-6">
-                                <h2 className="cd-display text-xl font-semibold text-[#14161A]">
-                                    {car.carName}
-                                </h2>
-                                <p className="text-[#6B6F78] text-sm mt-2 leading-6">
-                                    Premium luxury vehicle, ready for your next journey.
-                                </p>
-                                <button
-                                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                                    className="cd-btn-primary w-full py-3 mt-5"
-                                >
-                                    Back To Top
-                                </button>
-                            </div>
+                        {/* Trust badges — classic "delivery info" strip under the buy box */}
+                        <div className=" rounded-3xl border border-[#E9E3D6] divide-y divide-[#E9E3D6]">
+                            {[
+                                { label: "No prepayment required", icon: "M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4z" },
+                                { label: "Free cancellation anytime", icon: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" },
+                                { label: "Inspected & certified fleet", icon: "M20 6L9 17l-5-5" },
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 px-5 py-3.5">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 ">
+                                        <path d={item.icon} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <span className="text-sm  font-medium">{item.label}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
+
+           
+                   
         </div>
     );
 };
 
 export default CarsDetails;
-
-
-
-/**gallery img gullo click korel full show korebe and ar nise add to cart btn and icon thake jekhee ay detial ar inof card hoy show kore clik korele dakte pabo and view detals and checkout page sow korbe ... https://demo1.leotheme.com/leo_rent_car_demo/en/type/1-hummingbird-printed-t-shirt.html ay webiste ar moto ... please kore dao */
-
-
-
-
-/**{
-    "_id": "7cb2c083eb8cb37f0a72e9d3",
-    "carName": "Ferrari 250 GTO",
-    "category": "Classic Racing Car",
-    "price": 3383140,
-    "currency": "USD",
-    "image": "https://images.unsplash.com/photo-1597687210367-a4915552d886?w=800&h=500&auto=format&fit=crop&q=80",
-    "description": "The Ferrari 250 GTO represents Ferrari's relentless pursuit of performance and elegance. Combining a 3.9L V8 Twin-Turbo with Ferrari's legendary Italian craftsmanship, this classic racing car delivers an exhilarating driving experience for 1962 and beyond, blending motorsport-derived technology with everyday usability.",
-    "carInformation": {
-        "manufacturer": "Ferrari",
-        "modelYear": 1962,
-        "engine": "3.9L V8 Twin-Turbo",
-        "horsepower": "942 HP",
-        "torque": "673 Nm",
-        "topSpeed": "317 km/h",
-        "acceleration0to100": "3.0 sec",
-        "transmission": "7-Speed Dual-Clutch Automatic",
-        "drivetrain": "RWD",
-        "fuelType": "Petrol",
-        "seatingCapacity": 2,
-        "weight": "1800 kg",
-        "bodyType": "Classic Racing Car",
-        "color": "Nero Daytona Black",
-        "countryOfOrigin": "Italy"
-    },
-    "imageGallery": [
-        "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=1024&h=683&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1654442594766-68a1aa2ea5c8?w=1024&h=683&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1615440321449-83897161d806?w=1024&h=683&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1618102973579-3c6852d015d2?w=1024&h=683&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1614200179396-2bdb77ebf81b?w=1024&h=683&auto=format&fit=crop&q=80"
-    ],
-    "features": [
-        "Premium Leather Interior",
-        "Bluetooth & Apple CarPlay",
-        "Advanced Aerodynamics Package",
-        "Reverse Camera",
-        "Keyless Entry",
-        "Side Slip Control"
-    ],
-    "mileage": "11 km/l",
-    "warranty": "3 Years Manufacturer Warranty",
-    "availability": "Pre-Order",
-    "rating": 4.9,
-    "reviewsCount": 62,
-    "dealerLocation": "Ferrari Dealership - Tokyo",
-    "createdAt": "1962-01-15T10:00:00.000Z",
-    "updatedAt": "2026-07-15T10:00:00.000Z"
-} */
