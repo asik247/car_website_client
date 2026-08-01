@@ -1,22 +1,27 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useInstance from "../../Hooks/useInstance";
 import Swal from "sweetalert2";
+import { FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 
 const CarsDetails = () => {
     const instance = useInstance();
     const { id } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     //! ---- Local UI state
-    const [quantity, setQuantity] = useState(1); 
-    const [showAddToCart, setShowAddToCart] = useState(false); 
+    const [quantity, setQuantity] = useState(1);
+    const [showAddToCart, setShowAddToCart] = useState(false);
     const [pickupDate, setPickupDate] = useState("");
     const [dropoffDate, setDropoffDate] = useState("");
- //? controls the cart preview modal
-    const [activeImage, setActiveImage] = useState(0); 
-    const [activeTab, setActiveTab] = useState("overview"); 
+    //? controls the cart preview modal
+    const [activeImage, setActiveImage] = useState(0);
+    const [activeTab, setActiveTab] = useState("overview");
+
+    //! ---- Cart modal ref (DaisyUI native <dialog> modal)
+    const cartModalRef = useRef(null);
 
     //Todo ---- Fetch the car being viewed 
     const { data: car = {}, isLoading } = useQuery({
@@ -26,6 +31,15 @@ const CarsDetails = () => {
             return res.data;
         },
     });
+    //! Fetch the card data addToCartsData
+    const { data: addData = [] } = useQuery({
+        queryKey: ['addToCartsData'],
+        queryFn: async () => {
+            const res = await instance.get('/addToCartsData');
+            return res.data;
+        }
+    })
+    // console.log('AddToCartData', addData);
 
 
     //? ---- Derived values 
@@ -34,6 +48,13 @@ const CarsDetails = () => {
     const today = new Date().toISOString().split("T")[0]; // used as the min date for the date pickers
     const gallery = car.imageGallery?.length > 0 ? car.imageGallery : [car.image].filter(Boolean);
     const mainImage = gallery[activeImage] || car.image;
+
+    //? ---- Cart derived values (badge count + total)
+    const cartItemCount = addData.length;
+    const cartTotal = addData.reduce((sum, item) => {
+        const qty = item.quantity || 1;
+        return sum + (item.price || 0) * qty;
+    }, 0);
 
     //Todo Loading state 
     if (isLoading) {
@@ -104,17 +125,72 @@ const CarsDetails = () => {
             .post("/addToCartsData", cartData)
             .then((res) => {
                 console.log(res.data);
+                queryClient.invalidateQueries({ queryKey: ["addToCartsData"] });
                 Swal.fire({
                     icon: "success",
                     title: "Added to cart",
                     text: `${car.carName} has been added to your cart.`,
-                    timer: 1400,
+                    timer: 2000,
                     showConfirmButton: false,
                 });
             })
             .catch((err) => {
                 console.log(err.message);
             });
+    };
+
+    //Todo ---- Open / close the cart modal
+    const openCart = () => cartModalRef.current?.showModal();
+    const closeCart = () => cartModalRef.current?.close();
+
+    //Todo ---- Remove a single item from the cart
+    const handleRemoveFromCart = (item) => {
+        Swal.fire({
+            icon: "warning",
+            title: "Remove item?",
+            text: `Remove ${item.carName} from your cart?`,
+            showCancelButton: true,
+            confirmButtonText: "Remove",
+            confirmButtonColor: "#C9A15B",
+            cancelButtonColor: "#9CA3AF",
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            instance
+                .delete(`/addToCartsData/${item._id}`)
+                .then(() => {
+                    queryClient.invalidateQueries({ queryKey: ["addToCartsData"] });
+                    Swal.fire({
+                        icon: "success",
+                        title: "Removed",
+                        timer: 1200,
+                        showConfirmButton: false,
+                    });
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Something went wrong",
+                        text: "Could not remove this item. Please try again.",
+                        confirmButtonColor: "#C9A15B",
+                    });
+                });
+        });
+    };
+
+    //Todo ---- Checkout handler (wire this up to your real checkout flow)
+    const handleCheckout = () => {
+        if (cartItemCount === 0) return;
+        closeCart();
+        Swal.fire({
+            icon: "success",
+            title: "Proceeding to checkout",
+            text: "Redirecting you to complete your booking...",
+            timer: 1500,
+            showConfirmButton: false,
+        });
+        // navigate("/checkout"); // hook this up to your router
     };
 
     const TABS = [
@@ -124,27 +200,44 @@ const CarsDetails = () => {
     ];
 
     return (
-        
+
         <div className="min-h-screen font-['Manrope',sans-serif]">
             <style>
                 {`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');`}
             </style>
 
             <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 pb-28">
-                {/*BREADCRUMB  */}
-                <div className="flex items-center gap-2 text-[0.78rem]  mb-6">
-                    <button onClick={() => navigate("/")} className="hover:text-[#8A6B23] transition-colors">
-                        Home
+                {/*BREADCRUMB + CART ICON  */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2 text-[0.78rem]">
+                        <button onClick={() => navigate("/")} className="hover:text-[#8A6B23] transition-colors">
+                            Home
+                        </button>
+                        <span>/</span>
+                        <button onClick={() => navigate(-1)} className="hover:text-[#8A6B23] transition-colors">
+                            Cars
+                        </button>
+                        <span>/</span>
+                        <span className=" font-medium truncate max-w-[200px]">{car.carName}</span>
+                    </div>
+
+                    {/* ---- Cart trigger icon ---- */}
+                    <button
+                        onClick={openCart}
+                        aria-label="Open cart"
+                        className="relative inline-flex items-center justify-center w-11 h-11 rounded-full border border-[#E9E3D6] hover:border-[#C9A15B]  transition-colors duration-200"
+                    >
+                        <FaShoppingCart className=" text-lg" />
+
+                        {cartItemCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-[#C9A15B] text-white text-[0.68rem] font-bold font-['Space_Mono',monospace] shadow-sm">
+                                {cartItemCount > 99 ? "99+" : cartItemCount}
+                            </span>
+                        )}
                     </button>
-                    <span>/</span>
-                    <button onClick={() => navigate(-1)} className="hover:text-[#8A6B23] transition-colors">
-                        Cars
-                    </button>
-                    <span>/</span>
-                    <span className=" font-medium truncate max-w-[200px]">{car.carName}</span>
                 </div>
 
-                
+
                 <div className="grid md:grid-cols-[88px_1fr] gap-4 mb-10">
                     {/* Thumbnail rail */}
                     <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
@@ -152,9 +245,8 @@ const CarsDetails = () => {
                             <button
                                 key={index}
                                 onClick={() => setActiveImage(index)}
-                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${
-                                    activeImage === index ? "border-[#C9A15B]" : "border-transparent"
-                                }`}
+                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${activeImage === index ? "border-[#C9A15B]" : "border-transparent"
+                                    }`}
                             >
                                 <img src={img} alt={`${car.carName} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                             </button>
@@ -175,7 +267,7 @@ const CarsDetails = () => {
                 </div>
                 {/* Lef + Right Parent */}
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
-                   {/* Left side */}
+                    {/* Left side */}
                     <div className="lg:col-span-2 space-y-6">
 
                         <div>
@@ -193,9 +285,8 @@ const CarsDetails = () => {
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${
-                                        activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
-                                    }`}
+                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
+                                        }`}
                                 >
                                     {tab.label}
                                     {activeTab === tab.key && (
@@ -271,7 +362,7 @@ const CarsDetails = () => {
                             )}
                         </div>
 
-                       
+
                         {gallery.length > 1 && (
                             <section>
                                 <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold  mb-2">
@@ -304,7 +395,7 @@ const CarsDetails = () => {
                         )}
                     </div>
 
-                   {/* Right Side */}
+                    {/* Right Side */}
                     <div className="lg:sticky lg:top-24 space-y-4">
 
                         {/* Buy box */}
@@ -318,9 +409,8 @@ const CarsDetails = () => {
                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full  opacity-75" />
                                     )}
                                     <span
-                                        className={`relative inline-flex h-2 w-2 rounded-full ${
-                                            showAddToCart ? "" : ""
-                                        }`}
+                                        className={`relative inline-flex h-2 w-2 rounded-full ${showAddToCart ? "" : ""
+                                            }`}
                                     />
                                 </span>
                             </div>
@@ -453,8 +543,136 @@ const CarsDetails = () => {
                 </div>
             </div>
 
-           
-                   
+            {/* ---- Cart Modal (DaisyUI native <dialog>) ---- */}
+            <dialog ref={cartModalRef} className="modal">
+                <div className="modal-box max-w-2xl p-0 overflow-hidden rounded-3xl font-['Manrope',sans-serif]">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-[#E9E3D6] bg-[#F6F3ED]">
+                        <div>
+                            <p className="uppercase tracking-[0.18em] text-[0.65rem] font-bold text-[#8A6B23] mb-1">
+                                Your Selection
+                            </p>
+                            <h3 className="font-['Fraunces',serif] text-xl font-semibold text-[#14161A]">
+                                Shopping Cart{" "}
+                                <span className="text-[#8A6B23] text-base font-medium">
+                                    ({cartItemCount} {cartItemCount === 1 ? "item" : "items"})
+                                </span>
+                            </h3>
+                        </div>
+                        <button
+                            onClick={closeCart}
+                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#EFE8D6] transition-colors text-[#14161A]"
+                            aria-label="Close cart"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    {/* Body */}
+                    <div className="max-h-[55vh] overflow-y-auto px-6 py-4">
+                        {cartItemCount === 0 ? (
+                            <div className="py-16 text-center">
+                                <FaShoppingCart className="mx-auto text-4xl text-[#E9E3D6] mb-3" />
+                                <p className="font-['Fraunces',serif] text-lg font-semibold text-[#14161A]">
+                                    Your cart is empty
+                                </p>
+                                <p className="text-sm text-[#7A7E87] mt-1">
+                                    Browse our fleet and add a vehicle to get started.
+                                </p>
+                            </div>
+                        ) : (
+                            <ul className="divide-y divide-[#E9E3D6]">
+                                {addData.map((item) => {
+                                    const qty = item.quantity || 1;
+                                    const subtotal = (item.price || 0) * qty;
+
+                                    return (
+                                        <li key={item._id} className="flex gap-4 py-4">
+                                            <img
+                                                src={item.image}
+                                                alt={item.carName}
+                                                className="w-20 h-20 rounded-2xl object-cover border border-[#E9E3D6] flex-shrink-0"
+                                            />
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0">
+                                                        <h4 className="font-semibold text-[#14161A] truncate">
+                                                            {item.carName}
+                                                        </h4>
+                                                        <p className="text-xs text-[#7A7E87] mt-0.5">
+                                                            {item.pickupDate && item.dropoffDate
+                                                                ? `${item.pickupDate} → ${item.dropoffDate}`
+                                                                : "Dates not specified"}
+                                                        </p>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => handleRemoveFromCart(item)}
+                                                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-[#B3453F] hover:bg-[#FCEBEA] transition-colors"
+                                                        aria-label={`Remove ${item.carName}`}
+                                                    >
+                                                        <FaTrashAlt className="text-sm" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex items-center justify-between mt-2.5">
+                                                    <div className="flex items-center gap-3 text-sm">
+                                                        <span className="text-[#7A7E87]">
+                                                            ৳{(item.price || 0).toLocaleString()} / day
+                                                        </span>
+                                                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#F6F3ED] border border-[#E9E3D6] text-xs font-semibold text-[#14161A]">
+                                                            Qty: {qty}
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-['Space_Mono',monospace] font-bold text-[#14161A]">
+                                                        ৳{subtotal.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    {cartItemCount > 0 && (
+                        <div className="border-t border-[#E9E3D6] bg-[#F6F3ED] px-6 py-5">
+                            <div className="flex items-baseline justify-between mb-4">
+                                <span className="uppercase tracking-[0.14em] text-[0.7rem] font-bold text-[#8A6B23]">
+                                    Total
+                                </span>
+                                <span className="font-['Space_Mono',monospace] text-2xl font-bold text-[#14161A]">
+                                    ৳{cartTotal.toLocaleString()}
+                                </span>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeCart}
+                                    className="flex-1 py-3 rounded-2xl font-semibold border border-[#E9E3D6] text-[#14161A] hover:bg-white transition-colors"
+                                >
+                                    Continue Browsing
+                                </button>
+                                <button
+                                    onClick={handleCheckout}
+                                    className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#C9A15B] hover:bg-[#B78E4A] transition-colors"
+                                >
+                                    Checkout
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Click-outside-to-close backdrop (native <dialog> feature) */}
+                <form method="dialog" className="modal-backdrop">
+                    <button>close</button>
+                </form>
+            </dialog>
+
         </div>
     );
 };
