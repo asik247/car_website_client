@@ -145,6 +145,7 @@ const CarsDetails = () => {
 
     //Todo ---- Remove a single item from the cart
     const handleRemoveFromCart = (item) => {
+
         Swal.fire({
             icon: "warning",
             title: "Remove item?",
@@ -158,7 +159,8 @@ const CarsDetails = () => {
 
             instance
                 .delete(`/addToCartsData/${item._id}`)
-                .then(() => {
+                .then((res) => {
+                    console.log(res.data);
                     queryClient.invalidateQueries({ queryKey: ["addToCartsData"] });
                     Swal.fire({
                         icon: "success",
