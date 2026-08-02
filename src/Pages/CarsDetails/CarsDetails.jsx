@@ -20,10 +20,16 @@ const CarsDetails = () => {
     const [activeImage, setActiveImage] = useState(0);
     const [activeTab, setActiveTab] = useState("overview");
 
+    //! ---- Remove-confirm modal state (NEW)
+    const [itemToRemove, setItemToRemove] = useState(null);
+    const [isRemoving, setIsRemoving] = useState(false);
+
     //! ---- Cart modal ref (DaisyUI native <dialog> modal)
     const cartModalRef = useRef(null);
+    //! ---- Remove-confirm modal ref (NEW)
+    const removeModalRef = useRef(null);
 
-    //Todo ---- Fetch the car being viewed 
+    //Todo ---- Fetch the car being viewed
     const { data: car = {}, isLoading } = useQuery({
         queryKey: ["cars", id],
         queryFn: async () => {
@@ -33,16 +39,14 @@ const CarsDetails = () => {
     });
     //! Fetch the card data addToCartsData
     const { data: addData = [] } = useQuery({
-        queryKey: ['addToCartsData'],
+        queryKey: ["addToCartsData"],
         queryFn: async () => {
-            const res = await instance.get('/addToCartsData');
+            const res = await instance.get("/addToCartsData");
             return res.data;
-        }
-    })
-    // console.log('AddToCartData', addData);
+        },
+    });
 
-
-    //? ---- Derived values 
+    //? ---- Derived values
     const dailyRate = car.price || 0;
     const totalPrice = dailyRate * quantity;
     const today = new Date().toISOString().split("T")[0]; // used as the min date for the date pickers
@@ -56,7 +60,7 @@ const CarsDetails = () => {
         return sum + (item.price || 0) * qty;
     }, 0);
 
-    //Todo Loading state 
+    //Todo Loading state
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center bg-[#F6F3ED]">
@@ -64,6 +68,7 @@ const CarsDetails = () => {
             </div>
         );
     }
+
     //? Checked Availability..
     const handleCheckAvailability = () => {
         if (!pickupDate || !dropoffDate) {
@@ -136,6 +141,12 @@ const CarsDetails = () => {
             })
             .catch((err) => {
                 console.log(err.message);
+                Swal.fire({
+                    icon: "error",
+                    title: "Something went wrong",
+                    text: "Could not add this item to your cart. Please try again.",
+                    confirmButtonColor: "#C9A15B",
+                });
             });
     };
 
@@ -143,42 +154,52 @@ const CarsDetails = () => {
     const openCart = () => cartModalRef.current?.showModal();
     const closeCart = () => cartModalRef.current?.close();
 
-    //Todo ---- Remove a single item from the cart
+    //Todo ---- Open the remove-confirm modal (replaces the old SweetAlert confirm)
+    // FIX: previously this fired a SweetAlert *on top of* the cart modal, which
+    // looked broken and never actually invalidated the cart query on success.
     const handleRemoveFromCart = (item) => {
+        setItemToRemove(item);
+        removeModalRef.current?.showModal();
+    };
 
-        Swal.fire({
-            icon: "warning",
-            title: "Remove item?",
-            text: `Remove ${item.carName} from your cart?`,
-            showCancelButton: true,
-            confirmButtonText: "Remove",
-            confirmButtonColor: "#C9A15B",
-            cancelButtonColor: "#9CA3AF",
-        }).then((result) => {
-            if (!result.isConfirmed) return;
+    const closeRemoveModal = () => {
+        removeModalRef.current?.close();
+        setItemToRemove(null);
+    };
 
-            instance
-                .delete(`/addToCartsData/${item._id}`)
-                .then((res) => {
-                    console.log(res.data);
-                    queryClient.invalidateQueries({ queryKey: ["addToCartsData"] });
-                    Swal.fire({
-                        icon: "success",
-                        title: "Removed",
-                        timer: 1200,
-                        showConfirmButton: false,
-                    });
-                })
-                .catch((err) => {
-                    console.log(err.message);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Something went wrong",
-                        text: "Could not remove this item. Please try again.",
-                        confirmButtonColor: "#C9A15B",
-                    });
+    //Todo ---- Actually perform the delete once confirmed
+    const confirmRemoveItem = () => {
+        if (!itemToRemove?._id) return;
+
+        setIsRemoving(true);
+
+        instance
+            .delete(`/addToCartsData/${itemToRemove._id}`)
+            .then((res) => {
+                console.log(res.data);
+                // FIX: this was missing before — cart list never refreshed after delete
+                queryClient.invalidateQueries({ queryKey: ["addToCartsData"] });
+
+                closeRemoveModal();
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Removed",
+                    text: `${itemToRemove.carName} was removed from your cart.`,
+                    timer: 1500,
+                    showConfirmButton: false,
                 });
-        });
+            })
+            .catch((err) => {
+                console.log(err.message);
+                Swal.fire({
+                    icon: "error",
+                    title: "Something went wrong",
+                    text: "Could not remove this item. Please try again.",
+                    confirmButtonColor: "#C9A15B",
+                });
+            })
+            .finally(() => setIsRemoving(false));
     };
 
     //Todo ---- Checkout handler (wire this up to your real checkout flow)
@@ -202,7 +223,6 @@ const CarsDetails = () => {
     ];
 
     return (
-
         <div className="min-h-screen font-['Manrope',sans-serif]">
             <style>
                 {`@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');`}
@@ -239,7 +259,6 @@ const CarsDetails = () => {
                     </button>
                 </div>
 
-
                 <div className="grid md:grid-cols-[88px_1fr] gap-4 mb-10">
                     {/* Thumbnail rail */}
                     <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
@@ -247,8 +266,9 @@ const CarsDetails = () => {
                             <button
                                 key={index}
                                 onClick={() => setActiveImage(index)}
-                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${activeImage === index ? "border-[#C9A15B]" : "border-transparent"
-                                    }`}
+                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${
+                                    activeImage === index ? "border-[#C9A15B]" : "border-transparent"
+                                }`}
                             >
                                 <img src={img} alt={`${car.carName} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                             </button>
@@ -262,16 +282,16 @@ const CarsDetails = () => {
                             alt={car.carName}
                             className="w-full h-[340px] md:h-[520px] object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                         />
-                        <span className="absolute top-4 left-4 uppercase tracking-[0.18em] text-[0.65rem] font-bold   rounded-full px-3 py-1.5">
+                        <span className="absolute top-4 left-4 uppercase tracking-[0.18em] text-[0.65rem] font-bold rounded-full px-3 py-1.5">
                             Verified Fleet
                         </span>
                     </div>
                 </div>
-                {/* Lef + Right Parent */}
+
+                {/* Left + Right Parent */}
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
                     {/* Left side */}
                     <div className="lg:col-span-2 space-y-6">
-
                         <div>
                             <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold text-[#8A6B23] mb-2">
                                 Premium Rental
@@ -287,8 +307,9 @@ const CarsDetails = () => {
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
-                                        }`}
+                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${
+                                        activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
+                                    }`}
                                 >
                                     {tab.label}
                                     {activeTab === tab.key && (
@@ -302,9 +323,7 @@ const CarsDetails = () => {
                         <div className=" rounded-3xl p-7 md:p-8 border border-[#E9E3D6]">
                             {activeTab === "overview" && (
                                 <div>
-                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-4">
-                                        About This Vehicle
-                                    </h2>
+                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-4">About This Vehicle</h2>
                                     <p className="leading-8 ">{car.description}</p>
                                 </div>
                             )}
@@ -317,10 +336,7 @@ const CarsDetails = () => {
                                     {car.features?.length > 0 ? (
                                         <div className="grid md:grid-cols-2 gap-3">
                                             {car.features.map((feature, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex items-center gap-3  border border-[#E9E3D6] rounded-2xl px-4 py-3.5"
-                                                >
+                                                <div key={index} className="flex items-center gap-3  border border-[#E9E3D6] rounded-2xl px-4 py-3.5">
                                                     <span className="flex-shrink-0 w-[26px] h-[26px] rounded-full   flex items-center justify-center">
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                                                             <path
@@ -344,9 +360,7 @@ const CarsDetails = () => {
 
                             {activeTab === "why" && (
                                 <div>
-                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">
-                                        Why Rent With Us
-                                    </h2>
+                                    <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">Why Rent With Us</h2>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         {[
                                             { title: "No Prepayment Required", body: "Reserve your vehicle without paying upfront." },
@@ -364,15 +378,10 @@ const CarsDetails = () => {
                             )}
                         </div>
 
-
                         {gallery.length > 1 && (
                             <section>
-                                <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold  mb-2">
-                                    Gallery
-                                </p>
-                                <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">
-                                    More Views
-                                </h2>
+                                <p className="uppercase tracking-[0.22em] text-[0.72rem] font-bold  mb-2">Gallery</p>
+                                <h2 className="font-['Fraunces',serif] text-2xl font-semibold  mb-5">More Views</h2>
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                     {gallery.map((img, index) => (
@@ -399,21 +408,15 @@ const CarsDetails = () => {
 
                     {/* Right Side */}
                     <div className="lg:sticky lg:top-24 space-y-4">
-
                         {/* Buy box */}
                         <div className="rounded-3xl border border-[#E9E3D6] p-7">
                             <div className="flex items-end justify-between mb-1">
-                                <p className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">
-                                    Per Day
-                                </p>
+                                <p className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">Per Day</p>
                                 <span className="relative flex h-2 w-2">
                                     {showAddToCart && (
                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full  opacity-75" />
                                     )}
-                                    <span
-                                        className={`relative inline-flex h-2 w-2 rounded-full ${showAddToCart ? "" : ""
-                                            }`}
-                                    />
+                                    <span className={`relative inline-flex h-2 w-2 rounded-full ${showAddToCart ? "" : ""}`} />
                                 </span>
                             </div>
                             <p className="font-['Space_Mono',monospace] text-3xl font-bold tracking-[0.02em]  [font-variant-numeric:tabular-nums]">
@@ -425,16 +428,14 @@ const CarsDetails = () => {
                             <div className="space-y-4">
                                 {/* Pick-up date */}
                                 <div>
-                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
-                                        Pick Up
-                                    </label>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">Pick Up</label>
                                     <input
                                         type="date"
                                         min={today}
                                         value={pickupDate}
                                         onChange={(e) => {
                                             setPickupDate(e.target.value);
-                                            setShowAddToCart(false); // any date change invalidates the previous availability check
+                                            setShowAddToCart(false);
                                         }}
                                         className="w-full border border-[#E9E3D6] rounded-xl px-3 py-2.5 outline-none font-semibold transition-colors duration-200 focus:border-[#C9A15B]"
                                     />
@@ -442,9 +443,7 @@ const CarsDetails = () => {
 
                                 {/* Drop-off date */}
                                 <div>
-                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
-                                        Drop Off
-                                    </label>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">Drop Off</label>
                                     <input
                                         type="date"
                                         min={pickupDate || today}
@@ -459,9 +458,7 @@ const CarsDetails = () => {
 
                                 {/* Quantity stepper */}
                                 <div>
-                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">
-                                        Quantity
-                                    </label>
+                                    <label className="block uppercase tracking-[0.14em] text-[0.65rem] font-bold  mb-1.5">Quantity</label>
                                     <div className="flex items-center border border-[#E9E3D6] rounded-xl overflow-hidden">
                                         <button
                                             type="button"
@@ -500,12 +497,8 @@ const CarsDetails = () => {
                             <div className="h-px  my-5" />
 
                             <div className="flex items-baseline justify-between mb-5">
-                                <span className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">
-                                    Estimated Total
-                                </span>
-                                <span className="font-['Space_Mono',monospace] text-xl font-bold ">
-                                    ৳{totalPrice.toLocaleString()}
-                                </span>
+                                <span className="uppercase tracking-[0.14em] text-[0.65rem] font-bold ">Estimated Total</span>
+                                <span className="font-['Space_Mono',monospace] text-xl font-bold ">৳{totalPrice.toLocaleString()}</span>
                             </div>
 
                             {/* Primary CTA — swaps label/behaviour once availability is confirmed */}
@@ -526,7 +519,7 @@ const CarsDetails = () => {
                             )}
                         </div>
 
-                        {/* Trust badges — classic "delivery info" strip under the buy box */}
+                        {/* Trust badges */}
                         <div className=" rounded-3xl border border-[#E9E3D6] divide-y divide-[#E9E3D6]">
                             {[
                                 { label: "No prepayment required", icon: "M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4z" },
@@ -551,9 +544,7 @@ const CarsDetails = () => {
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-5 border-b border-[#E9E3D6] bg-[#F6F3ED]">
                         <div>
-                            <p className="uppercase tracking-[0.18em] text-[0.65rem] font-bold text-[#8A6B23] mb-1">
-                                Your Selection
-                            </p>
+                            <p className="uppercase tracking-[0.18em] text-[0.65rem] font-bold text-[#8A6B23] mb-1">Your Selection</p>
                             <h3 className="font-['Fraunces',serif] text-xl font-semibold text-[#14161A]">
                                 Shopping Cart{" "}
                                 <span className="text-[#8A6B23] text-base font-medium">
@@ -575,12 +566,8 @@ const CarsDetails = () => {
                         {cartItemCount === 0 ? (
                             <div className="py-16 text-center">
                                 <FaShoppingCart className="mx-auto text-4xl text-[#E9E3D6] mb-3" />
-                                <p className="font-['Fraunces',serif] text-lg font-semibold text-[#14161A]">
-                                    Your cart is empty
-                                </p>
-                                <p className="text-sm text-[#7A7E87] mt-1">
-                                    Browse our fleet and add a vehicle to get started.
-                                </p>
+                                <p className="font-['Fraunces',serif] text-lg font-semibold text-[#14161A]">Your cart is empty</p>
+                                <p className="text-sm text-[#7A7E87] mt-1">Browse our fleet and add a vehicle to get started.</p>
                             </div>
                         ) : (
                             <ul className="divide-y divide-[#E9E3D6]">
@@ -599,9 +586,7 @@ const CarsDetails = () => {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
-                                                        <h4 className="font-semibold text-[#14161A] truncate">
-                                                            {item.carName}
-                                                        </h4>
+                                                        <h4 className="font-semibold text-[#14161A] truncate">{item.carName}</h4>
                                                         <p className="text-xs text-[#7A7E87] mt-0.5">
                                                             {item.pickupDate && item.dropoffDate
                                                                 ? `${item.pickupDate} → ${item.dropoffDate}`
@@ -609,6 +594,7 @@ const CarsDetails = () => {
                                                         </p>
                                                     </div>
 
+                                                    {/* FIX: now opens the styled confirm modal instead of a stacked SweetAlert */}
                                                     <button
                                                         onClick={() => handleRemoveFromCart(item)}
                                                         className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-[#B3453F] hover:bg-[#FCEBEA] transition-colors"
@@ -620,9 +606,7 @@ const CarsDetails = () => {
 
                                                 <div className="flex items-center justify-between mt-2.5">
                                                     <div className="flex items-center gap-3 text-sm">
-                                                        <span className="text-[#7A7E87]">
-                                                            ৳{(item.price || 0).toLocaleString()} / day
-                                                        </span>
+                                                        <span className="text-[#7A7E87]">৳{(item.price || 0).toLocaleString()} / day</span>
                                                         <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#F6F3ED] border border-[#E9E3D6] text-xs font-semibold text-[#14161A]">
                                                             Qty: {qty}
                                                         </span>
@@ -643,9 +627,7 @@ const CarsDetails = () => {
                     {cartItemCount > 0 && (
                         <div className="border-t border-[#E9E3D6] bg-[#F6F3ED] px-6 py-5">
                             <div className="flex items-baseline justify-between mb-4">
-                                <span className="uppercase tracking-[0.14em] text-[0.7rem] font-bold text-[#8A6B23]">
-                                    Total
-                                </span>
+                                <span className="uppercase tracking-[0.14em] text-[0.7rem] font-bold text-[#8A6B23]">Total</span>
                                 <span className="font-['Space_Mono',monospace] text-2xl font-bold text-[#14161A]">
                                     ৳{cartTotal.toLocaleString()}
                                 </span>
@@ -669,12 +651,54 @@ const CarsDetails = () => {
                     )}
                 </div>
 
-                {/* Click-outside-to-close backdrop (native <dialog> feature) */}
+                {/* Click-outside-to-close backdrop */}
                 <form method="dialog" className="modal-backdrop">
                     <button>close</button>
                 </form>
             </dialog>
 
+            {/* ---- Remove-Confirm Modal (NEW) ---- */}
+            <dialog ref={removeModalRef} className="modal" onClose={() => setItemToRemove(null)}>
+                <div className="modal-box max-w-sm p-0 overflow-hidden rounded-3xl font-['Manrope',sans-serif]">
+                    <div className="px-6 pt-7 pb-2 text-center">
+                        <div className="mx-auto w-14 h-14 rounded-full bg-[#FCEBEA] flex items-center justify-center mb-4">
+                            <FaTrashAlt className="text-xl text-[#B3453F]" />
+                        </div>
+                        <h3 className="font-['Fraunces',serif] text-xl font-semibold text-[#14161A] mb-1.5">Remove item?</h3>
+                        {itemToRemove && (
+                            <p className="text-sm text-[#7A7E87] leading-6">
+                                Remove <span className="font-semibold text-[#14161A]">{itemToRemove.carName}</span> from your
+                                cart? This can't be undone.
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="flex gap-3 px-6 py-6">
+                        <button
+                            onClick={closeRemoveModal}
+                            disabled={isRemoving}
+                            className="flex-1 py-3 rounded-2xl font-semibold border border-[#E9E3D6] text-[#14161A] hover:bg-[#F6F3ED] transition-colors disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmRemoveItem}
+                            disabled={isRemoving}
+                            className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#B3453F] hover:bg-[#9C3A35] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                        >
+                            {isRemoving ? (
+                                <span className="loading loading-spinner loading-xs"></span>
+                            ) : (
+                                "Remove"
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                <form method="dialog" className="modal-backdrop">
+                    <button>close</button>
+                </form>
+            </dialog>
         </div>
     );
 };
