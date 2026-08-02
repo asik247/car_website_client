@@ -542,19 +542,19 @@ const CarsDetails = () => {
             <dialog ref={cartModalRef} className="modal">
                 <div className="modal-box max-w-2xl p-0 overflow-hidden rounded-3xl font-['Manrope',sans-serif]">
                     {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-[#E9E3D6] bg-[#F6F3ED]">
+                    <div className="flex items-center justify-between px-6 py-5 ">
                         <div>
-                            <p className="uppercase tracking-[0.18em] text-[0.65rem] font-bold text-[#8A6B23] mb-1">Your Selection</p>
-                            <h3 className="font-['Fraunces',serif] text-xl font-semibold text-[#14161A]">
+                            <p className="uppercase tracking-[0.18em] text-[0.65rem] font-bold  mb-1">Your Selection</p>
+                            <h3 className="font-['Fraunces',serif] text-xl font-semibold ]">
                                 Shopping Cart{" "}
-                                <span className="text-[#8A6B23] text-base font-medium">
+                                <span className=" text-base font-medium">
                                     ({cartItemCount} {cartItemCount === 1 ? "item" : "items"})
                                 </span>
                             </h3>
                         </div>
                         <button
                             onClick={closeCart}
-                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#EFE8D6] transition-colors text-[#14161A]"
+                            className="w-9 h-9  cursor-pointer flex items-center justify-center rounded-full  transition-colors "
                             aria-label="Close cart"
                         >
                             ✕
@@ -565,9 +565,9 @@ const CarsDetails = () => {
                     <div className="max-h-[55vh] overflow-y-auto px-6 py-4">
                         {cartItemCount === 0 ? (
                             <div className="py-16 text-center">
-                                <FaShoppingCart className="mx-auto text-4xl text-[#E9E3D6] mb-3" />
-                                <p className="font-['Fraunces',serif] text-lg font-semibold text-[#14161A]">Your cart is empty</p>
-                                <p className="text-sm text-[#7A7E87] mt-1">Browse our fleet and add a vehicle to get started.</p>
+                                <FaShoppingCart className="mx-auto text-4xl  mb-3" />
+                                <p className="font-['Fraunces',serif] text-lg font-semibold ">Your cart is empty</p>
+                                <p className="text-sm ] mt-1">Browse our fleet and add a vehicle to get started.</p>
                             </div>
                         ) : (
                             <ul className="divide-y divide-[#E9E3D6]">
@@ -580,14 +580,14 @@ const CarsDetails = () => {
                                             <img
                                                 src={item.image}
                                                 alt={item.carName}
-                                                className="w-20 h-20 rounded-2xl object-cover border border-[#E9E3D6] flex-shrink-0"
+                                                className="w-20 h-20 rounded-2xl object-cover flex-shrink-0"
                                             />
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
-                                                        <h4 className="font-semibold text-[#14161A] truncate">{item.carName}</h4>
-                                                        <p className="text-xs text-[#7A7E87] mt-0.5">
+                                                        <h4 className="font-semibold  truncate">{item.carName}</h4>
+                                                        <p className="text-xs  mt-0.5">
                                                             {item.pickupDate && item.dropoffDate
                                                                 ? `${item.pickupDate} → ${item.dropoffDate}`
                                                                 : "Dates not specified"}
@@ -597,7 +597,7 @@ const CarsDetails = () => {
                                                     {/* FIX: now opens the styled confirm modal instead of a stacked SweetAlert */}
                                                     <button
                                                         onClick={() => handleRemoveFromCart(item)}
-                                                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-[#B3453F] hover:bg-[#FCEBEA] transition-colors"
+                                                        className="flex-shrink-0  cursor-pointer w-8 h-8 flex items-center justify-center rounded-full   transition-colors"
                                                         aria-label={`Remove ${item.carName}`}
                                                     >
                                                         <FaTrashAlt className="text-sm" />
@@ -606,12 +606,12 @@ const CarsDetails = () => {
 
                                                 <div className="flex items-center justify-between mt-2.5">
                                                     <div className="flex items-center gap-3 text-sm">
-                                                        <span className="text-[#7A7E87]">৳{(item.price || 0).toLocaleString()} / day</span>
-                                                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-[#F6F3ED] border border-[#E9E3D6] text-xs font-semibold text-[#14161A]">
+                                                        <span className="">৳{(item.price || 0).toLocaleString()} / day</span>
+                                                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full border  text-xs font-semibold ">
                                                             Qty: {qty}
                                                         </span>
                                                     </div>
-                                                    <span className="font-['Space_Mono',monospace] font-bold text-[#14161A]">
+                                                    <span className="font-['Space_Mono',monospace] font-bold ">
                                                         ৳{subtotal.toLocaleString()}
                                                     </span>
                                                 </div>
@@ -625,10 +625,10 @@ const CarsDetails = () => {
 
                     {/* Footer */}
                     {cartItemCount > 0 && (
-                        <div className="border-t border-[#E9E3D6] bg-[#F6F3ED] px-6 py-5">
+                        <div className="border-t  px-6 py-5">
                             <div className="flex items-baseline justify-between mb-4">
-                                <span className="uppercase tracking-[0.14em] text-[0.7rem] font-bold text-[#8A6B23]">Total</span>
-                                <span className="font-['Space_Mono',monospace] text-2xl font-bold text-[#14161A]">
+                                <span className="uppercase tracking-[0.14em] text-[0.7rem] font-bold ">Total</span>
+                                <span className="font-['Space_Mono',monospace] text-2xl font-bold ">
                                     ৳{cartTotal.toLocaleString()}
                                 </span>
                             </div>
@@ -636,13 +636,13 @@ const CarsDetails = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={closeCart}
-                                    className="flex-1 py-3 rounded-2xl font-semibold border border-[#E9E3D6] text-[#14161A] hover:bg-white transition-colors"
+                                    className="flex-1 bg-primary cursor-pointer py-3 rounded-2xl font-semibold border  transition-colors"
                                 >
                                     Continue Browsing
                                 </button>
                                 <button
                                     onClick={handleCheckout}
-                                    className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#C9A15B] hover:bg-[#B78E4A] transition-colors"
+                                    className="flex-1 bg-primary cursor-pointer py-3 rounded-2xl font-bold  transition-colors"
                                 >
                                     Checkout
                                 </button>
@@ -661,13 +661,13 @@ const CarsDetails = () => {
             <dialog ref={removeModalRef} className="modal" onClose={() => setItemToRemove(null)}>
                 <div className="modal-box max-w-sm p-0 overflow-hidden rounded-3xl font-['Manrope',sans-serif]">
                     <div className="px-6 pt-7 pb-2 text-center">
-                        <div className="mx-auto w-14 h-14 rounded-full bg-[#FCEBEA] flex items-center justify-center mb-4">
-                            <FaTrashAlt className="text-xl text-[#B3453F]" />
+                        <div className="mx-auto w-14 h-14 rounded-full  flex items-center justify-center mb-4">
+                            <FaTrashAlt className="text-xl " />
                         </div>
-                        <h3 className="font-['Fraunces',serif] text-xl font-semibold text-[#14161A] mb-1.5">Remove item?</h3>
+                        <h3 className="font-['Fraunces',serif] text-xl font-semibold  mb-1.5">Remove item?</h3>
                         {itemToRemove && (
                             <p className="text-sm text-[#7A7E87] leading-6">
-                                Remove <span className="font-semibold text-[#14161A]">{itemToRemove.carName}</span> from your
+                                Remove <span className="font-semibold ">{itemToRemove.carName}</span> from your
                                 cart? This can't be undone.
                             </p>
                         )}
@@ -677,14 +677,14 @@ const CarsDetails = () => {
                         <button
                             onClick={closeRemoveModal}
                             disabled={isRemoving}
-                            className="flex-1 py-3 rounded-2xl font-semibold border border-[#E9E3D6] text-[#14161A] hover:bg-[#F6F3ED] transition-colors disabled:opacity-50"
+                            className="flex-1  cursor-pointer py-3 rounded-2xl font-semibold border border-[#E9E3D6]   transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={confirmRemoveItem}
                             disabled={isRemoving}
-                            className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#B3453F] hover:bg-[#9C3A35] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                            className="flex-1 cursor-pointer py-3 rounded-2xl font-bold text-white bg-[#B3453F] hover:bg-[#9C3A35] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                         >
                             {isRemoving ? (
                                 <span className="loading loading-spinner loading-xs"></span>
