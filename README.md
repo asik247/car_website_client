@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./screenshots/hero.png" alt="Asik Wheels Banner" width="100%" />
+<img src="./screenshots/hero.jpg" alt="Asik Wheels Banner" width="100%" />
 
 <br /><br />
 
@@ -31,21 +31,21 @@ A modern, full-stack car rental / showroom web app featuring live inventory, det
 <table>
 <tr>
 <td width="50%">
-  <img src="./screenshots/featured-cars.png" alt="Featured Cars Listing" width="100%" />
+  <img src="./public/featured-cars.jpg" alt="Featured Cars Listing" width="100%" />
   <p align="center"><sub><b>Featured Cars</b> — filterable inventory grid</sub></p>
 </td>
 <td width="50%">
-  <img src="./screenshots/car-details-cart.png" alt="Car Details & Cart" width="100%" />
+  <img src="./public/car-details-cart.jpg" alt="Car Details & Cart" width="100%" />
   <p align="center"><sub><b>Car Details</b> — gallery view with booking cart</sub></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
-  <img src="./screenshots/auth-login.png" alt="Login / Auth Page" width="100%" />
+  <img src="./public/auth-login.jpg" alt="Login / Auth Page" width="100%" />
   <p align="center"><sub><b>Authentication</b> — secure login & signup</sub></p>
 </td>
 <td width="50%">
-  <img src="./screenshots/hero.png" alt="Home Hero" width="100%" />
+  <img src="./public/hero.jpg" alt="Home Hero" width="100%" />
   <p align="center"><sub><b>Home</b> — hero section with stats</sub></p>
 </td>
 </tr>
