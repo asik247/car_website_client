@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./screenshots/hero.jpg" alt="Asik Wheels Banner" width="100%" />
+<img src="./public/hero.jpg" alt="Asik Wheels Banner" width="100%" />
 
 <br /><br />
 
