@@ -45,6 +45,7 @@ const CarsDetails = () => {
             return res.data;
         },
     });
+    console.log(addData);
 
     //? ---- Derived values
     const dailyRate = car.price || 0;
@@ -112,7 +113,7 @@ const CarsDetails = () => {
         });
     };
 
-    /** Add To Cart */
+    /** Add To Carts */
     const handleAddToCart = () => {
         const cartData = {
             carId: car._id,
@@ -203,17 +204,17 @@ const CarsDetails = () => {
     };
 
     //Todo ---- Checkout handler (wire this up to your real checkout flow)
-    const handleCheckout = () => {
-        if (cartItemCount === 0) return;
-        closeCart();
-        Swal.fire({
-            icon: "success",
-            title: "Proceeding to checkout",
-            text: "Redirecting you to complete your booking...",
-            timer: 1500,
-            showConfirmButton: false,
-        });
-        // navigate("/checkout"); // hook this up to your router
+    const handleCheckout = async() => {
+        const res = await instance.post(
+            "/create-checkout-session",
+            {
+                carName: addData.carName,
+                carId: addData.carId,
+                price: addData.price,
+            }
+        );
+
+        window.location.href = res.data.url;
     };
 
     const TABS = [
@@ -266,9 +267,8 @@ const CarsDetails = () => {
                             <button
                                 key={index}
                                 onClick={() => setActiveImage(index)}
-                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${
-                                    activeImage === index ? "border-[#C9A15B]" : "border-transparent"
-                                }`}
+                                className={`flex-shrink-0 w-20 h-20 md:w-full md:h-20 rounded-xl overflow-hidden border-2 transition-colors duration-200 ${activeImage === index ? "border-[#C9A15B]" : "border-transparent"
+                                    }`}
                             >
                                 <img src={img} alt={`${car.carName} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                             </button>
@@ -307,9 +307,8 @@ const CarsDetails = () => {
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${
-                                        activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
-                                    }`}
+                                    className={`relative pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors duration-200 ${activeTab === tab.key ? "" : " hover:text-[#4A4E57]"
+                                        }`}
                                 >
                                     {tab.label}
                                     {activeTab === tab.key && (
