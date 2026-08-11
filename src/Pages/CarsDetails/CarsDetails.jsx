@@ -203,7 +203,7 @@ const CarsDetails = () => {
             .finally(() => setIsRemoving(false));
     };
 
-    //Todo ---- Checkout handler (wire this up to your real checkout flow)
+    //Todo ---- Checkout handler (wire this up to your real checkout flows)
     const handleCheckout = async() => {
         const res = await instance.post(
             "/create-checkout-session",
