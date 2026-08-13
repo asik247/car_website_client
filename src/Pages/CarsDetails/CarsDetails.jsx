@@ -50,7 +50,7 @@ const CarsDetails = () => {
     //? ---- Derived values
     const dailyRate = car.price || 0;
     const totalPrice = dailyRate * quantity;
-    const today = new Date().toISOString().split("T")[0]; // used as the min date for the date pickers
+    const today = new Date().toISOString().split("T")[0];
     const gallery = car.imageGallery?.length > 0 ? car.imageGallery : [car.image].filter(Boolean);
     const mainImage = gallery[activeImage] || car.image;
 
@@ -204,17 +204,18 @@ const CarsDetails = () => {
     };
 
     //Todo ---- Checkout handler (wire this up to your real checkout flowsss)
-    const handleCheckout = async() => {
-        const res = await instance.post(
-            "/create-checkout-session",
-            {
-                carName: addData.carName,
-                carId: addData.carId,
-                price: addData.price,
-            }
-        );
+    const handleCheckout = (addData) => {
 
-        window.location.href = res.data.url;
+        const data = {
+            carName: addData.carName
+,
+            carId: addData.carId,
+            price: addData.price,
+        }
+        console.log(data);
+
+
+
     };
 
     const TABS = [
