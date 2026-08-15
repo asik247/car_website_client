@@ -168,7 +168,7 @@ const CarsDetails = () => {
         setItemToRemove(null);
     };
 
-    //Todo ---- Actually perform the delete once confirmed
+    //Todo ---- Actually perform the delete once confirmedssss
     const confirmRemoveItem = () => {
         if (!itemToRemove?._id) return;
 
