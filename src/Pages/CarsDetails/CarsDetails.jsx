@@ -70,7 +70,7 @@ const CarsDetails = () => {
         );
     }
 
-    //? Checked Availability..
+    //? Checked Availabilityss..
     const handleCheckAvailability = () => {
         if (!pickupDate || !dropoffDate) {
             Swal.fire({
