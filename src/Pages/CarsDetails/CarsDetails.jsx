@@ -61,7 +61,7 @@ const CarsDetails = () => {
         return sum + (item.price || 0) * qty;
     }, 0);
 
-    //Todo Loading state
+    //Todo Loading statess
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center bg-[#F6F3ED]">
