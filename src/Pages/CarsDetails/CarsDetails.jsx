@@ -54,7 +54,7 @@ const CarsDetails = () => {
     const gallery = car.imageGallery?.length > 0 ? car.imageGallery : [car.image].filter(Boolean);
     const mainImage = gallery[activeImage] || car.image;
 
-    //? ---- Cart derived values (badge count + total)
+    //? ---- Cart derived values (badge count + totals)
     const cartItemCount = addData.length;
     const cartTotal = addData.reduce((sum, item) => {
         const qty = item.quantity || 1;
