@@ -204,18 +204,32 @@ const CarsDetails = () => {
     };
 
     //Todo ---- Checkout handler (wire this up to your real checkout flowsss)
-    const handleCheckout = (addData) => {
+    const handleCheckout = () => {
+        if (addData.length === 0) return;
 
-        const data = {
-            carName: addData.carName
-,
-            carId: addData.carId,
-            price: addData.price,
-        }
-        console.log(data);
+        const items = addData.map((item) => ({
+            carName: item.carName,
+            carId: item.carId,
+            price: item.price,
+            quantity: item.quantity || 1,
+        }));
 
-
-
+        instance
+            .post("/create-checkout-session", { items })
+            .then((res) => {
+                if (res.data?.url) {
+                    window.location.href = res.data.url; // Stripe checkout page-এ redirect
+                }
+            })
+            .catch((err) => {
+                console.log(err.message);
+                Swal.fire({
+                    icon: "error",
+                    title: "Checkout failed",
+                    text: "Could not start checkout. Please try again.",
+                    confirmButtonColor: "#C9A15B",
+                });
+            });
     };
 
     const TABS = [
@@ -640,10 +654,7 @@ const CarsDetails = () => {
                                 >
                                     Continue Browsing
                                 </button>
-                                <button
-                                    onClick={handleCheckout}
-                                    className="flex-1 bg-primary cursor-pointer py-3 rounded-2xl font-bold  transition-colors"
-                                >
+                                <button onClick={handleCheckout} className="...">
                                     Checkout
                                 </button>
                             </div>

@@ -13,6 +13,7 @@ import AuthLayout from "../Layouts/AuthLayout";
 import PrivateRoutes from "./PrivateRoutes";
 
 
+
 const router = createBrowserRouter([
     {
         path: '/', Component: RootLayout, children: [
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
             { path: 'about', element: <About></About> },
             { path: 'contact', element: <Contact></Contact> },
             { path: 'carsDetails/:id', element: <PrivateRoutes><CarsDetails></CarsDetails></PrivateRoutes> },
+            
         ]
     },
     //Todo Auth provider roter here.
