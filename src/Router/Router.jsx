@@ -11,6 +11,7 @@ import LogIn from "../Auth/LogIn&Registation/LogIn";
 import Registation from "../Auth/LogIn&Registation/Registation";
 import AuthLayout from "../Layouts/AuthLayout";
 import PrivateRoutes from "./PrivateRoutes";
+import AllCars from "../Pages/AllCars/AllCars";
 
 
 
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
     {
         path: '/', Component: RootLayout, children: [
             { index: true, Component: Home },
+            {path:'allCars',element:<AllCars></AllCars>},
             { path: 'listing', element: <Listing></Listing> },
             { path: 'newPage', element: <NewPage></NewPage> },
             { path: 'blog', element: <Blog></Blog> },

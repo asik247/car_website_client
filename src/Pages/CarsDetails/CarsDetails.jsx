@@ -654,7 +654,7 @@ const CarsDetails = () => {
                                 >
                                     Continue Browsing
                                 </button>
-                                <button onClick={handleCheckout} className="...">
+                                <button  onClick={handleCheckout} className="flex-1 bg-primary cursor-pointer py-3 rounded-2xl font-semibold border  transition-colors">
                                     Checkout
                                 </button>
                             </div>

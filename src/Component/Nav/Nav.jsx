@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaCarSide, FaMoon, FaSun } from "react-icons/fa";
-import { HiMenu, HiX, HiOutlineHome, HiOutlineTruck, HiOutlineDocumentText, HiOutlineNewspaper, HiOutlineMail, HiChevronDown } from "react-icons/hi";
+import { HiMenu, HiX, HiOutlineHome, HiOutlineTruck, HiOutlineDocumentText, HiOutlineNewspaper, HiOutlineMail, HiChevronDown,  } from "react-icons/hi";
 import { Link, NavLink } from "react-router";
 import useAuth from "../../Hooks/useAuth";
 
@@ -8,6 +8,7 @@ const NAV_HEIGHT = "h-16 sm:h-[68px]";
 
 const mobileLinks = [
     { to: "/", label: "Home", icon: HiOutlineHome },
+    { to:"/allCars",label:"AllCars",icon:HiOutlineTruck},
     { to: "/listing", label: "Inventory", icon: HiOutlineTruck },
     { to: "/blog", label: "Blog", icon: HiOutlineNewspaper },
     { to: "/contact", label: "Contact", icon: HiOutlineMail },
@@ -110,6 +111,9 @@ const Nav = () => {
                         <ul className="menu menu-horizontal px-1 gap-6">
                             <li>
                                 <NavLink to="/" className={navLinkClass}>Home</NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/allCars" className={navLinkClass}>AllCars</NavLink>
                             </li>
                             <li>
                                 <NavLink to="/listing" className={navLinkClass}>Inventory</NavLink>
