@@ -7,7 +7,7 @@ const instanceSecure = axios.create({
 const useInstanceScure = () => {
     //Todo current user.
     const { user } = useAuth();
-    console.log('current user', user);
+    // console.log('current user', user);
     // console.log('AccessToken here', user?.accessToken);
 
     //? useEffect code.
