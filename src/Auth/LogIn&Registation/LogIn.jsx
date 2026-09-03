@@ -62,7 +62,13 @@ const LogIn = () => {
     }
     //? Handler socail login code here.
     const handlerSocailLogin = () => {
-        console.log('socail login btn clicked');
+        socaialLogin()
+        .then((res)=>{
+            navegate(location.state || '/');
+            console.log(res.user);
+        }).catch(erro=>{
+            console.log(erro.message);
+        })
     }
     return (
         <div className="min-h-screen w-full flex items-center justify-center px-4 py-14">
@@ -94,7 +100,7 @@ const LogIn = () => {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-5" onSubmit={handleSubmit(handlerLogIn)}>
+                <form className="mt-8 space-y-2" onSubmit={handleSubmit(handlerLogIn)}>
                     {/* Email */}
                     <div>
                         <label htmlFor="email" className="font-body text-sm font-medium  block mb-1.5">
