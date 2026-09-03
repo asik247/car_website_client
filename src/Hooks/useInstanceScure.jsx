@@ -10,6 +10,7 @@ const useInstanceScure = () => {
     //? useEffect code.
     useEffect(()=>{
         const requestIntercepter = axios.interceptors.request.use((config)=>{
+            console.log('AccessToken here',user?.accessToken);
             if(user?.accessToken){
                 config.headers.Authorization = `Bearer ${user?.accessToken}`
             }
