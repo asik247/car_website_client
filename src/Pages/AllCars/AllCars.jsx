@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import useInstance from '../../Hooks/useInstance';
+// import useInstance from '../../Hooks/useInstance';
 import useInstanceScure from '../../Hooks/useInstanceScure';
 
 const AllCars = () => {
-    const instance = useInstance();
+    // const instance = useInstance();
     const instanceSecure = useInstanceScure();
     //? TranStack Query using get AllCars Data in db;
     const { data: allcars = [],isLoading ,isError } = useQuery({
