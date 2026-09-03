@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     {
         path: '/', Component: RootLayout, children: [
             { index: true, Component: Home },
-            {path:'allCars',element:<AllCars></AllCars>},
+            {path:'allCars',element:<PrivateRoutes><AllCars></AllCars></PrivateRoutes>},
             { path: 'listing', element: <Listing></Listing> },
             { path: 'newPage', element: <NewPage></NewPage> },
             { path: 'blog', element: <Blog></Blog> },

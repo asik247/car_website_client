@@ -1,12 +1,11 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from 'firebase/auth';
 import React, { createContext, useEffect, useState } from 'react';
 import { auth } from '../../Firebase/firebase.init';
 export const AuthContext = createContext(null);
 const AuthProvider = ({ children }) => {
-
-//Todo state hre.
-const [user,setUser] = useState(null);
-const [loading,setLoading] = useState(true);
+    //Todo state hre.
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
 
 
@@ -20,33 +19,38 @@ const [loading,setLoading] = useState(true);
         return signInWithEmailAndPassword(auth, email, password)
     }
     //Todo logOut User.
-    const logOutUser = ()=>{
+    const logOutUser = () => {
         return signOut(auth)
     }
     //Todo verifyEmail.
-    const verifyEmail = ()=>{
+    const verifyEmail = () => {
         return sendEmailVerification(auth.currentUser)
     }
     //Todo forgot password.
-    const forgotPassword = (userEmail)=>{
-        return sendPasswordResetEmail(auth,userEmail)
+    const forgotPassword = (userEmail) => {
+        return sendPasswordResetEmail(auth, userEmail)
     }
     //Todo update user.
-    const updateUserInfo = (profileInfo)=>{
-        return updateProfile(auth.currentUser,profileInfo)
+    const updateUserInfo = (profileInfo) => {
+        return updateProfile(auth.currentUser, profileInfo)
+    }
+    //Todo Social login user.
+    const provider = new GoogleAuthProvider();
+    const socaialLogin = ()=>{
+        return signInWithPopup(auth,provider);
     }
 
 
     //? onAuthStateChange implemt.
-    useEffect(()=>{
-        const unsubscribe = onAuthStateChanged(auth,(currentUser)=>{
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser)
             setLoading(false)
         })
-        return()=>{
+        return () => {
             unsubscribe()
         }
-    },[])
+    }, [])
 
 
 
@@ -59,7 +63,8 @@ const [loading,setLoading] = useState(true);
         loading,
         verifyEmail,
         forgotPassword,
-        updateUserInfo
+        updateUserInfo,
+        socaialLogin
     }
     return <AuthContext.Provider value={usersInfo}>
         {children}

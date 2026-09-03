@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link, useLocation, useNavigate} from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import useAuth from '../../Hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { FaCircleExclamation } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 const LogIn = () => {
-    const { logInUser, user, forgotPassword, loading } = useAuth();
+    const { logInUser, socaialLogin, user, forgotPassword, loading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('')
     const location = useLocation();
@@ -22,7 +22,7 @@ const LogIn = () => {
                 // console.log(res.user);
                 navegate(location.state || '/')
                 setSuccess('Login done')
-                
+
 
             }).catch(() => {
                 setError('root', {
@@ -59,6 +59,10 @@ const LogIn = () => {
 
     if (loading) {
         return <p>Loading...</p>
+    }
+    //? Handler socail login code here.
+    const handlerSocailLogin = () => {
+        console.log('socail login btn clicked');
     }
     return (
         <div className="min-h-screen w-full flex items-center justify-center px-4 py-14">
@@ -175,6 +179,7 @@ const LogIn = () => {
                     >
                         Log in
                     </button>
+
                     {/* error message show */}
                     <div className='text-sm md:text-2xl font-bold text-center'>
                         {
@@ -187,6 +192,12 @@ const LogIn = () => {
                         }
                     </div>
                 </form>
+                {/* socail login */}
+                <h1 className='text-center font-bold my-2'>OR</h1>
+                <button onClick={handlerSocailLogin} className="btn w-full bg-white text-black border-[#e5e5e5]">
+                    <svg aria-label="Google logo" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g><path d="m0 0H512V512H0" fill="#fff"></path><path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"></path><path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path><path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path><path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path></g></svg>
+                    Login with Google
+                </button>
             </div>
         </div>
     );
