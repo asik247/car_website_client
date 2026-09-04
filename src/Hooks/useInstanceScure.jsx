@@ -6,7 +6,7 @@ const instanceSecure = axios.create({
 })
 const useInstanceScure = () => {
     //Todo current user.
-    const { user } = useAuth();
+    const { user, logOutUser } = useAuth();
     // console.log('current user', user);
     // console.log('AccessToken here', user?.accessToken);
 
@@ -21,11 +21,25 @@ const useInstanceScure = () => {
         }, (err) => {
             return Promise.reject(err)
         })
+        //! response intercepter.
+        const response = instanceSecure.interceptors.response.use((response) => {
+            return response
+         }, (err) => {
+            // console.log(err?.response?.status);
+            if (err.response?.status === 401 || err.response?.status ===403) {
+                // console.log('you logout');
+                logOutUser()
+                    .then(() => {
+                        console.log('log out done');
+                    })
+            }
+        })
         //? unmount code.
         return () => {
             instanceSecure.interceptors.request.eject(requestIntercepter);
+            instanceSecure.interceptors.response.eject(response)
         }
-    }, [user])
+    }, [user, logOutUser])
     return instanceSecure
 };
 
