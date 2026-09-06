@@ -2,6 +2,8 @@ import React, { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import useInstanceScure from '../../Hooks/useInstanceScure';
+import useInstance from '../../Hooks/useInstance';
+import useAuth from '../../Hooks/useAuth';
 
 // --- সিঙ্গেল কার কার্ড কম্পোনেন্ট (হোভার ইমেজ সাইক্লিং সহ) ---
 const CarCard = ({ car }) => {
@@ -42,9 +44,8 @@ const CarCard = ({ car }) => {
               key={idx}
               src={src}
               alt={car?.carName || 'Vehicle'}
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${
-                idx === activeIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-              }`}
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${idx === activeIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}
             />
           ))}
 
@@ -61,11 +62,10 @@ const CarCard = ({ car }) => {
           {/* Availability ব্যাজ */}
           {car?.availability && (
             <span
-              className={`absolute top-3.5 right-3.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm text-white ${
-                car.availability.toLowerCase() === 'sold out'
-                  ? 'bg-rose-500'
-                  : 'bg-emerald-500'
-              }`}
+              className={`absolute top-3.5 right-3.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm text-white ${car.availability.toLowerCase() === 'sold out'
+                ? 'bg-rose-500'
+                : 'bg-emerald-500'
+                }`}
             >
               {car.availability}
             </span>
@@ -77,9 +77,8 @@ const CarCard = ({ car }) => {
               {gallery.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    idx === activeIndex ? 'w-4 bg-white' : 'w-1 bg-white/50'
-                  }`}
+                  className={`h-1 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-white' : 'w-1 bg-white/50'
+                    }`}
                 />
               ))}
             </div>
@@ -143,7 +142,7 @@ const CarCard = ({ car }) => {
               </span>
 
               <span className="inline-flex items-center text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-                Details 
+                Details
                 <svg className="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -159,6 +158,8 @@ const CarCard = ({ car }) => {
 // --- মেইন AllCars পেজ কম্পোনেন্ট ---
 const AllCars = () => {
   const instanceSecure = useInstanceScure();
+  const instance = useInstance();
+  const {user} = useAuth();
 
   // সার্চ এবং ফিল্টারিং স্টেট
   const [searchTerm, setSearchTerm] = useState('');
@@ -169,10 +170,27 @@ const AllCars = () => {
   const { data: allcars = [], isLoading, isError, error } = useQuery({
     queryKey: ['allCars'],
     queryFn: async () => {
-      const res = await instanceSecure.get('/allCars');
+      const res = await instance.get('/allCars');
       return res.data;
     },
   });
+  //! Post current user email in db.
+  const generateToken = async () => {
+    const { data } = await instance.post(
+      "/generateJWT_Token",
+      {
+        email: user?.email
+        // email:'mdasik123@gmail.com'
+      }
+    );
+
+    // console.log(data);
+    localStorage.setItem("accessTokenJWT",data.token)
+  };
+  generateToken()
+
+
+
 
   // ডাইনামিক ক্যাটাগরি লিস্ট
   const categories = useMemo(() => {

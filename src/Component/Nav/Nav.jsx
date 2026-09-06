@@ -78,6 +78,8 @@ const Nav = () => {
         logOutUser()
             .then(() => {
                 console.log('yes you logout');
+                localStorage.removeItem("accessTokenJWT")
+                // localStorage.removeItem("access-token");
             })
     }
   
